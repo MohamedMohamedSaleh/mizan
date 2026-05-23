@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/localization/locale_keys.dart';
 import '../../../../core/router/route_names.dart';
+import '../../../../core/services/toast_service.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
@@ -48,10 +49,10 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
       body: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthPasswordResetSent) {
-            context.showSnackBar(LocaleKeys.authResetPasswordSuccess.tr());
+            AppToast.success(context, LocaleKeys.authResetPasswordSuccess.tr());
             context.goNamed(RouteNames.login);
           } else if (state is AuthError) {
-            context.showSnackBar(state.message);
+            AppToast.error(context, state.message);
           }
         },
         child: SafeArea(

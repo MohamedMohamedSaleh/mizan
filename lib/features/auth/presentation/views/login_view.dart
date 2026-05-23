@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/localization/locale_keys.dart';
 import '../../../../core/router/route_names.dart';
+import '../../../../core/services/toast_service.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
@@ -46,13 +47,15 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.colors.background,
-      // appBar: AppBar(
-      //   actions: const [AuthPreferencesAppBarActions()],
-      // ),
+      appBar: AppBar(
+        actions: const [AuthPreferencesAppBarActions()],
+      ),
       body: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
-            context.showSnackBar(state.message);
+            AppToast.error(context, state.message);
+          } else if (state is Authenticated) {
+            AppToast.success(context, LocaleKeys.authLoginSuccessful.tr());
           }
         },
         child: SafeArea(

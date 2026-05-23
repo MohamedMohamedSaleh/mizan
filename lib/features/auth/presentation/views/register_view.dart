@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/localization/locale_keys.dart';
 import '../../../../core/router/route_names.dart';
+import '../../../../core/services/toast_service.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
@@ -52,7 +53,7 @@ class _RegisterViewState extends State<RegisterView> {
   void _onRegister() {
     if (!_formKey.currentState!.validate()) return;
     if (!_acceptedTerms) {
-      context.showSnackBar(LocaleKeys.authAcceptTermsRequired.tr());
+      AppToast.warning(context, LocaleKeys.authAcceptTermsRequired.tr());
       return;
     }
 
@@ -79,18 +80,18 @@ class _RegisterViewState extends State<RegisterView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.colors.background,
-      // appBar: AppBar(
-      //   actions: const [AuthPreferencesAppBarActions()],
-      // ),
+      appBar: AppBar(
+        actions: const [AuthPreferencesAppBarActions()],
+      ),
       body: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is RegisterFailure) {
-            context.showSnackBar(state.message);
+            AppToast.error(context, state.message);
           } else if (state is RegisterSuccess) {
-            context.showSnackBar(LocaleKeys.authRegisterSuccess.tr());
+            AppToast.success(context, LocaleKeys.authRegisterSuccess.tr());
             context.go(RoutePaths.dashboard);
           } else if (state is RegisterOtpRequired) {
-            context.showSnackBar(LocaleKeys.authCheckYourEmailForOtp.tr());
+            AppToast.info(context, LocaleKeys.authCheckYourEmailForOtp.tr());
             context.go(
               RoutePaths.verifyRegisterOtp,
               extra: state.payload,

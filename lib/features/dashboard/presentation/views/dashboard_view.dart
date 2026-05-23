@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/localization/locale_keys.dart';
+import '../../../../core/services/toast_service.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
@@ -51,35 +52,44 @@ class DashboardView extends StatelessWidget {
           AppSpacing.gapW8,
         ],
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: AppSpacing.paddingAllLg,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${LocaleKeys.dashboardWelcome.tr()} ${LocaleKeys.appName.tr()}',
-                style: context.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              AppSpacing.gapH20,
-              Expanded(
-                child: GridView.builder(
-                  itemCount: modules.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 1.4,
+      body: BlocListener<AuthCubit, AuthState>(
+        listener: (context, state) {
+          if (state is Unauthenticated) {
+            AppToast.success(context, LocaleKeys.authLogout.tr());
+          } else if (state is AuthError) {
+            AppToast.error(context, state.message);
+          }
+        },
+        child: SafeArea(
+          child: Padding(
+            padding: AppSpacing.paddingAllLg,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${LocaleKeys.dashboardWelcome.tr()} ${LocaleKeys.appName.tr()}',
+                  style: context.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
-                  itemBuilder: (context, index) {
-                    final module = modules[index];
-                    return _ModuleCard(module: module);
-                  },
                 ),
-              ),
-            ],
+                AppSpacing.gapH20,
+                Expanded(
+                  child: GridView.builder(
+                    itemCount: modules.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 1.4,
+                    ),
+                    itemBuilder: (context, index) {
+                      final module = modules[index];
+                      return _ModuleCard(module: module);
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

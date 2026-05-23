@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/localization/locale_keys.dart';
 import '../../../../core/router/route_names.dart';
+import '../../../../core/services/toast_service.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
@@ -59,11 +60,12 @@ class _LoginOtpViewState extends State<LoginOtpView> {
               _otpSent = true;
               _email = state.email;
             });
-            context.showSnackBar(LocaleKeys.authOtpSentSuccessfully.tr());
+            AppToast.success(context, LocaleKeys.authOtpSentSuccessfully.tr());
           } else if (state is Authenticated) {
+            AppToast.success(context, LocaleKeys.authLoginSuccessful.tr());
             context.go(RoutePaths.dashboard);
           } else if (state is AuthError) {
-            context.showSnackBar(state.message);
+            AppToast.error(context, state.message);
           }
         },
         child: SafeArea(

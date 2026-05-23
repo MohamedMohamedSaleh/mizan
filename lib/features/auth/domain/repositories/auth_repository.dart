@@ -41,4 +41,22 @@ abstract class AuthRepository {
     required String email,
     required String otp,
   });
+
+  Future<Result<UserEntity>> verifyRegisterOtp({
+    required String email,
+    required String otp,
+  });
+
+  Future<Result<void>> resendRegisterOtp({required String email});
+
+  Future<Result<void>> upsertProfile({
+    required String userId,
+    required String fullName,
+    required String email,
+    required String phone,
+    required String companyName,
+    required String jobTitle,
+    required String country,
+    required String city,
+  });
 }

@@ -77,7 +77,6 @@ class _LoginViewState extends State<LoginView> {
                           prefixIcon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
-                          textDirection: ui.TextDirection.ltr,
                           autofillHints: const [
                             AutofillHints.email,
                             AutofillHints.username,
@@ -101,7 +100,6 @@ class _LoginViewState extends State<LoginView> {
                           prefixIcon: Icons.lock_outline,
                           obscureText: _obscurePassword,
                           textInputAction: TextInputAction.done,
-                          textDirection: ui.TextDirection.ltr,
                           autofillHints: const [AutofillHints.password],
                           onFieldSubmitted: (_) => _onLogin(),
                           suffixIcon: IconButton(

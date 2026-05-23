@@ -22,6 +22,18 @@ abstract class AuthRemoteDataSource {
   Future<void> forgotPassword({required String email});
   Future<void> sendEmailOtp({required String email});
   Future<UserModel> verifyEmailOtp({required String email, required String otp});
+  Future<UserModel> verifyRegisterOtp({required String email, required String otp});
+  Future<void> resendRegisterOtp({required String email});
+  Future<void> upsertProfile({
+    required String userId,
+    required String fullName,
+    required String email,
+    required String phone,
+    required String companyName,
+    required String jobTitle,
+    required String country,
+    required String city,
+  });
 }
 
 /// Implementation backed by Supabase Auth.
@@ -75,18 +87,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final hasSession = response.session != null;
       final requiresEmailConfirmation = !hasSession;
 
-      if (hasSession) {
-        await _client.from('profiles').upsert({
-          'id': user.id,
-          'full_name': fullName,
-          'email': email,
-          'phone': phoneNumber,
-          'company_name': companyName,
-          'job_title': jobTitle,
-          'country': country,
-          'city': city,
-        });
-      }
+    if (hasSession) {
+      await upsertProfile(
+        userId: user.id,
+        fullName: fullName,
+        email: email,
+        phone: phoneNumber,
+        companyName: companyName,
+        jobTitle: jobTitle,
+        country: country,
+        city: city,
+      );
+    }
 
       return RegisterResultModel(
         user: UserModel.fromSupabaseUser(user),
@@ -142,5 +154,56 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
 
     return UserModel.fromSupabaseUser(user);
+  }
+
+  @override
+  Future<UserModel> verifyRegisterOtp({
+    required String email,
+    required String otp,
+  }) async {
+    final response = await _auth.verifyOTP(
+      email: email,
+      token: otp,
+      type: OtpType.signup,
+    );
+
+    final user = response.user;
+    final session = response.session;
+    if (user == null || session == null) {
+      throw Exception('OTP verification failed: no active session');
+    }
+
+    return UserModel.fromSupabaseUser(user);
+  }
+
+  @override
+  Future<void> resendRegisterOtp({required String email}) async {
+    await _auth.resend(
+      email: email,
+      type: OtpType.signup,
+    );
+  }
+
+  @override
+  Future<void> upsertProfile({
+    required String userId,
+    required String fullName,
+    required String email,
+    required String phone,
+    required String companyName,
+    required String jobTitle,
+    required String country,
+    required String city,
+  }) async {
+    await _client.from('profiles').upsert({
+      'id': userId,
+      'full_name': fullName,
+      'email': email,
+      'phone': phone,
+      'company_name': companyName,
+      'job_title': jobTitle,
+      'country': country,
+      'city': city,
+    });
   }
 }

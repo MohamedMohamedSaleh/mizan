@@ -80,14 +80,17 @@ class _RegisterViewState extends State<RegisterView> {
       backgroundColor: context.colors.background,
       body: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
-          if (state is AuthError) {
+          if (state is RegisterFailure) {
             context.showSnackBar(state.message);
           } else if (state is RegisterSuccess) {
             context.showSnackBar(LocaleKeys.authRegisterSuccess.tr());
             context.go(RoutePaths.dashboard);
-          } else if (state is EmailConfirmationRequired) {
-            context.showSnackBar(LocaleKeys.authEmailConfirmationRequired.tr());
-            context.replace(RoutePaths.login);
+          } else if (state is RegisterOtpRequired) {
+            context.showSnackBar(LocaleKeys.authCheckYourEmailForOtp.tr());
+            context.go(
+              RoutePaths.verifyRegisterOtp,
+              extra: state.payload,
+            );
           }
         },
         child: SafeArea(
@@ -129,7 +132,7 @@ class _RegisterViewState extends State<RegisterView> {
                         builder: (context, state) {
                           return AuthPrimaryButton(
                             label: LocaleKeys.authRegister.tr(),
-                            isLoading: state is AuthLoading,
+                            isLoading: state is RegisterLoading,
                             onPressed: _onRegister,
                           );
                         },

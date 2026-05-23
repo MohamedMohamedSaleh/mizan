@@ -9,8 +9,11 @@ import '../../features/auth/domain/usecases/get_current_user_usecase.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/auth/domain/usecases/register_usecase.dart';
+import '../../features/auth/domain/usecases/resend_register_otp_usecase.dart';
 import '../../features/auth/domain/usecases/send_email_otp_usecase.dart';
+import '../../features/auth/domain/usecases/upsert_profile_usecase.dart';
 import '../../features/auth/domain/usecases/verify_email_otp_usecase.dart';
+import '../../features/auth/domain/usecases/verify_register_otp_usecase.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../router/app_router.dart';
 
@@ -43,6 +46,9 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => ForgotPasswordUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => SendEmailOtpUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => VerifyEmailOtpUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(() => VerifyRegisterOtpUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(() => ResendRegisterOtpUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(() => UpsertProfileUseCase(sl<AuthRepository>()));
 
   // ──────────── Cubits ───────────────
   sl.registerLazySingleton(
@@ -54,6 +60,9 @@ Future<void> initDependencies() async {
       forgotPasswordUseCase: sl<ForgotPasswordUseCase>(),
       sendEmailOtpUseCase: sl<SendEmailOtpUseCase>(),
       verifyEmailOtpUseCase: sl<VerifyEmailOtpUseCase>(),
+      verifyRegisterOtpUseCase: sl<VerifyRegisterOtpUseCase>(),
+      resendRegisterOtpUseCase: sl<ResendRegisterOtpUseCase>(),
+      upsertProfileUseCase: sl<UpsertProfileUseCase>(),
     ),
   );
 

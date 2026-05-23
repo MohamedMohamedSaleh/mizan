@@ -56,6 +56,13 @@ abstract final class LocaleKeys {
   static const String authInvalidOrExpiredOtp = 'auth.invalid_or_expired_otp';
   static const String authNoAccountFoundForEmail = 'auth.no_account_found_for_email';
   static const String authLoginSuccessful = 'auth.login_successful';
+  static const String authVerifyEmail = 'auth.verify_email';
+  static const String authEnterOtpSentToEmail = 'auth.enter_otp_sent_to_email';
+  static const String authOtpCode = 'auth.otp_code';
+  static const String authVerify = 'auth.verify';
+  static const String authOtpVerifiedSuccessfully = 'auth.otp_verified_successfully';
+  static const String authCheckYourEmailForOtp = 'auth.check_your_email_for_otp';
+  static const String authBackToRegister = 'auth.back_to_register';
   static const String authResetPassword = 'auth.reset_password';
   static const String authResetPasswordDesc = 'auth.reset_password_desc';
   static const String authResetPasswordSuccess = 'auth.reset_password_success';

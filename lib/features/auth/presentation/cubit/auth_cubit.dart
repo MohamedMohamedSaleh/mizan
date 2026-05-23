@@ -6,8 +6,11 @@ import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
+import '../../domain/usecases/resend_register_otp_usecase.dart';
 import '../../domain/usecases/send_email_otp_usecase.dart';
+import '../../domain/usecases/upsert_profile_usecase.dart';
 import '../../domain/usecases/verify_email_otp_usecase.dart';
+import '../../domain/usecases/verify_register_otp_usecase.dart';
 import 'auth_state.dart';
 
 /// Manages authentication state across the app.
@@ -23,6 +26,9 @@ class AuthCubit extends Cubit<AuthState> {
     required ForgotPasswordUseCase forgotPasswordUseCase,
     required SendEmailOtpUseCase sendEmailOtpUseCase,
     required VerifyEmailOtpUseCase verifyEmailOtpUseCase,
+    required VerifyRegisterOtpUseCase verifyRegisterOtpUseCase,
+    required ResendRegisterOtpUseCase resendRegisterOtpUseCase,
+    required UpsertProfileUseCase upsertProfileUseCase,
   })  : _loginUseCase = loginUseCase,
         _registerUseCase = registerUseCase,
         _logoutUseCase = logoutUseCase,
@@ -30,6 +36,9 @@ class AuthCubit extends Cubit<AuthState> {
         _forgotPasswordUseCase = forgotPasswordUseCase,
         _sendEmailOtpUseCase = sendEmailOtpUseCase,
         _verifyEmailOtpUseCase = verifyEmailOtpUseCase,
+        _verifyRegisterOtpUseCase = verifyRegisterOtpUseCase,
+        _resendRegisterOtpUseCase = resendRegisterOtpUseCase,
+        _upsertProfileUseCase = upsertProfileUseCase,
         super(const AuthInitial());
 
   final LoginUseCase _loginUseCase;
@@ -39,6 +48,9 @@ class AuthCubit extends Cubit<AuthState> {
   final ForgotPasswordUseCase _forgotPasswordUseCase;
   final SendEmailOtpUseCase _sendEmailOtpUseCase;
   final VerifyEmailOtpUseCase _verifyEmailOtpUseCase;
+  final VerifyRegisterOtpUseCase _verifyRegisterOtpUseCase;
+  final ResendRegisterOtpUseCase _resendRegisterOtpUseCase;
+  final UpsertProfileUseCase _upsertProfileUseCase;
 
   /// Check if a user session already exists.
   Future<void> checkAuthStatus() async {
@@ -82,7 +94,7 @@ class AuthCubit extends Cubit<AuthState> {
     required String country,
     required String city,
   }) async {
-    emit(const AuthLoading());
+    emit(const RegisterLoading());
     final result = await _registerUseCase(
       RegisterParams(
         email: email,
@@ -96,15 +108,22 @@ class AuthCubit extends Cubit<AuthState> {
       ),
     );
     result.fold(
-      (failure) => emit(AuthError(failure.message)),
+      (failure) => emit(RegisterFailure(failure.message)),
       (registerResult) {
         if (registerResult.requiresEmailConfirmation) {
           emit(
-            const EmailConfirmationRequired(
-              message: 'Please check your email to confirm your account.',
+            RegisterOtpRequired(
+              RegisterOtpPayload(
+                email: email,
+                fullName: fullName,
+                phone: phoneNumber,
+                companyName: companyName,
+                jobTitle: jobTitle,
+                country: country,
+                city: city,
+              ),
             ),
           );
-          emit(const Unauthenticated());
           return;
         }
 
@@ -158,6 +177,53 @@ class AuthCubit extends Cubit<AuthState> {
     result.fold(
       (failure) => emit(AuthError(failure.message)),
       (user) => emit(Authenticated(user)),
+    );
+  }
+
+  Future<void> verifyRegisterOtp({
+    required RegisterOtpPayload payload,
+    required String otp,
+  }) async {
+    emit(const RegisterOtpVerifying());
+    final verifyResult = await _verifyRegisterOtpUseCase(
+      VerifyRegisterOtpParams(email: payload.email, otp: otp),
+    );
+
+    await verifyResult.fold(
+      (failure) async => emit(RegisterFailure(failure.message)),
+      (user) async {
+        final profileResult = await _upsertProfileUseCase(
+          UpsertProfileParams(
+            userId: user.id,
+            fullName: payload.fullName,
+            email: payload.email,
+            phone: payload.phone,
+            companyName: payload.companyName,
+            jobTitle: payload.jobTitle,
+            country: payload.country,
+            city: payload.city,
+          ),
+        );
+
+        profileResult.fold(
+          (failure) => emit(RegisterFailure(failure.message)),
+          (_) {
+            emit(RegisterSuccess(user));
+            emit(Authenticated(user));
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> resendRegisterOtp({required String email}) async {
+    emit(const ResendOtpLoading());
+    final result = await _resendRegisterOtpUseCase(
+      ResendRegisterOtpParams(email: email),
+    );
+    result.fold(
+      (failure) => emit(RegisterFailure(failure.message)),
+      (_) => emit(const ResendOtpSuccess()),
     );
   }
 }

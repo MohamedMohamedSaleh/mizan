@@ -10,6 +10,7 @@ import '../../features/auth/presentation/views/forgot_password_view.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/login_otp_view.dart';
 import '../../features/auth/presentation/views/register_view.dart';
+import '../../features/auth/presentation/views/verify_register_otp_view.dart';
 import '../../features/dashboard/presentation/views/dashboard_view.dart';
 import 'route_names.dart';
 
@@ -34,6 +35,7 @@ class AppRouter {
       final isOnAuthPage = state.matchedLocation == RoutePaths.login ||
           state.matchedLocation == RoutePaths.register ||
           state.matchedLocation == RoutePaths.loginOtp ||
+          state.matchedLocation == RoutePaths.verifyRegisterOtp ||
           state.matchedLocation == RoutePaths.forgotPassword;
 
       // Not authenticated and trying to access protected page → login
@@ -68,6 +70,17 @@ class AppRouter {
         path: RoutePaths.loginOtp,
         name: RouteNames.loginOtp,
         builder: (context, state) => const LoginOtpView(),
+      ),
+      GoRoute(
+        path: RoutePaths.verifyRegisterOtp,
+        name: RouteNames.verifyRegisterOtp,
+        builder: (context, state) {
+          final payload = state.extra as RegisterOtpPayload?;
+          if (payload == null) {
+            return const LoginView();
+          }
+          return VerifyRegisterOtpView(payload: payload);
+        },
       ),
       GoRoute(
         path: RoutePaths.forgotPassword,

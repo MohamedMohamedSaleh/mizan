@@ -157,4 +157,64 @@ class AuthRepositoryImpl implements AuthRepository {
       return Error(UnexpectedFailure(message: _mapGenericError(e)));
     }
   }
+
+  @override
+  Future<Result<UserEntity>> verifyRegisterOtp({
+    required String email,
+    required String otp,
+  }) async {
+    try {
+      final model = await _remoteDataSource.verifyRegisterOtp(
+        email: email,
+        otp: otp,
+      );
+      return Success(model.toEntity());
+    } on AuthException catch (e) {
+      return Error(AuthFailure(message: _mapAuthError(e.message)));
+    } catch (e) {
+      return Error(UnexpectedFailure(message: _mapGenericError(e)));
+    }
+  }
+
+  @override
+  Future<Result<void>> resendRegisterOtp({required String email}) async {
+    try {
+      await _remoteDataSource.resendRegisterOtp(email: email);
+      return const Success(null);
+    } on AuthException catch (e) {
+      return Error(AuthFailure(message: _mapAuthError(e.message)));
+    } catch (e) {
+      return Error(UnexpectedFailure(message: _mapGenericError(e)));
+    }
+  }
+
+  @override
+  Future<Result<void>> upsertProfile({
+    required String userId,
+    required String fullName,
+    required String email,
+    required String phone,
+    required String companyName,
+    required String jobTitle,
+    required String country,
+    required String city,
+  }) async {
+    try {
+      await _remoteDataSource.upsertProfile(
+        userId: userId,
+        fullName: fullName,
+        email: email,
+        phone: phone,
+        companyName: companyName,
+        jobTitle: jobTitle,
+        country: country,
+        city: city,
+      );
+      return const Success(null);
+    } on PostgrestException catch (e) {
+      return Error(ServerFailure(message: e.message));
+    } catch (e) {
+      return Error(UnexpectedFailure(message: e.toString()));
+    }
+  }
 }

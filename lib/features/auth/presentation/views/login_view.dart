@@ -1,5 +1,3 @@
-import 'dart:ui' as ui;
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +10,7 @@ import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
+import '../widgets/auth_preferences_appbar_actions.dart';
 import '../widgets/auth_widgets.dart';
 
 class LoginView extends StatefulWidget {
@@ -47,6 +46,9 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.colors.background,
+      // appBar: AppBar(
+      //   actions: const [AuthPreferencesAppBarActions()],
+      // ),
       body: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
@@ -65,11 +67,8 @@ class _LoginViewState extends State<LoginView> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                      // ── Logo / Brand ──
-                      _buildHeader(context),
-                      AppSpacing.gapH32,
-
-                      // ── Email ──
+                        _buildHeader(context),
+                        AppSpacing.gapH32,
                         AuthTextField(
                           controller: _emailController,
                           label: LocaleKeys.authEmail.tr(),
@@ -92,8 +91,6 @@ class _LoginViewState extends State<LoginView> {
                           },
                         ),
                         AppSpacing.gapH16,
-
-                      // ── Password ──
                         AuthTextField(
                           controller: _passwordController,
                           label: LocaleKeys.authPassword.tr(),
@@ -125,8 +122,6 @@ class _LoginViewState extends State<LoginView> {
                           },
                         ),
                         AppSpacing.gapH8,
-
-                      // ── Forgot Password ──
                         Align(
                           alignment: AlignmentDirectional.centerEnd,
                           child: TextButton(
@@ -135,8 +130,6 @@ class _LoginViewState extends State<LoginView> {
                           ),
                         ),
                         AppSpacing.gapH16,
-
-                      // ── Login Button ──
                         BlocBuilder<AuthCubit, AuthState>(
                           builder: (context, state) {
                             return AuthPrimaryButton(
@@ -147,8 +140,6 @@ class _LoginViewState extends State<LoginView> {
                           },
                         ),
                         AppSpacing.gapH24,
-
-                      // ── Register Link ──
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

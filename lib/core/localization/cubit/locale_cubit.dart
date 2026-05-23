@@ -19,6 +19,11 @@ class LocaleCubit extends Cubit<LocaleState> {
   LocaleCubit()
       : super(const LocaleState(locale: AppLocalization.startLocale));
 
+  void syncFromLocale(Locale locale) {
+    if (state.locale == locale) return;
+    emit(LocaleState(locale: locale));
+  }
+
   /// Switch the app locale and persist via easy_localization.
   Future<void> changeLocale(BuildContext context, Locale locale) async {
     await context.setLocale(locale);

@@ -1,17 +1,22 @@
-/// Central registry of all translation keys used in the app.
+﻿/// Central registry of all translation keys used in the app.
 ///
 /// Instead of hardcoding `'nav.dashboard'.tr()` in widgets, use:
 /// ```dart
 /// LocaleKeys.navDashboard.tr()
 /// ```
-/// This gives compile-time safety — a typo in a key becomes a
+/// This gives compile-time safety â€” a typo in a key becomes a
 /// compile error rather than a silent missing-translation at runtime.
 abstract final class LocaleKeys {
-  // ─────────────────────── App ────────────────────────────────────
+  static const String switchToLight = 'switch_to_light';
+  static const String switchToDark = 'switch_to_dark';
+  static const String changeLanguage = 'change_language';
+  static const String english = 'english';
+  static const String arabic = 'arabic';
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ App â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String appName = 'app.name';
   static const String appTagline = 'app.tagline';
 
-  // ─────────────────────── Navigation ────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String navDashboard = 'nav.dashboard';
   static const String navFinance = 'nav.finance';
   static const String navExpenses = 'nav.expenses';
@@ -23,7 +28,7 @@ abstract final class LocaleKeys {
   static const String navAccounts = 'nav.accounts';
   static const String navSettings = 'nav.settings';
 
-  // ─────────────────────── Auth ──────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String authLogin = 'auth.login';
   static const String authRegister = 'auth.register';
   static const String authLogout = 'auth.logout';
@@ -72,7 +77,7 @@ abstract final class LocaleKeys {
   static const String authLoginSuccess = 'auth.login_success';
   static const String authRegisterSuccess = 'auth.register_success';
 
-  // ─────────────────────── Fields ────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String fieldsAmount = 'fields.amount';
   static const String fieldsDate = 'fields.date';
   static const String fieldsCode = 'fields.code';
@@ -96,7 +101,7 @@ abstract final class LocaleKeys {
   static const String fieldsToDate = 'fields.to_date';
   static const String fieldsPaymentMethod = 'fields.payment_method';
 
-  // ─────────────────────── Accounting ────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Accounting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String accountingDebit = 'accounting.debit';
   static const String accountingCredit = 'accounting.credit';
   static const String accountingTotalDebit = 'accounting.total_debit';
@@ -115,7 +120,7 @@ abstract final class LocaleKeys {
   static const String accountingDraft = 'accounting.draft';
   static const String accountingVoid = 'accounting.void';
 
-  // ─────────────────────── Actions ───────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String actionsSave = 'actions.save';
   static const String actionsCancel = 'actions.cancel';
   static const String actionsSaveAsDraft = 'actions.save_as_draft';
@@ -140,7 +145,7 @@ abstract final class LocaleKeys {
   static const String actionsShowMore = 'actions.show_more';
   static const String actionsShowLess = 'actions.show_less';
 
-  // ─────────────────────── Messages ──────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String messagesSuccess = 'messages.success';
   static const String messagesError = 'messages.error';
   static const String messagesConfirmDelete = 'messages.confirm_delete';
@@ -159,7 +164,7 @@ abstract final class LocaleKeys {
   static const String messagesNetworkError = 'messages.network_error';
   static const String messagesOfflineMode = 'messages.offline_mode';
 
-  // ─────────────────────── Reports ───────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Reports â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String reportsExpenseReport = 'reports.expense_report';
   static const String reportsJournalReport = 'reports.journal_report';
   static const String reportsTotal = 'reports.total';
@@ -172,7 +177,7 @@ abstract final class LocaleKeys {
   static const String reportsGenerate = 'reports.generate';
   static const String reportsNoReportData = 'reports.no_report_data';
 
-  // ─────────────────────── Settings ──────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String settingsTitle = 'settings.title';
   static const String settingsLanguage = 'settings.language';
   static const String settingsArabic = 'settings.arabic';
@@ -184,7 +189,7 @@ abstract final class LocaleKeys {
   static const String settingsAbout = 'settings.about';
   static const String settingsVersion = 'settings.version';
 
-  // ─────────────────────── Dashboard ─────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String dashboardWelcome = 'dashboard.welcome';
   static const String dashboardTotalExpenses = 'dashboard.total_expenses';
   static const String dashboardTotalEntries = 'dashboard.total_entries';
@@ -192,3 +197,4 @@ abstract final class LocaleKeys {
   static const String dashboardQuickActions = 'dashboard.quick_actions';
   static const String dashboardOverview = 'dashboard.overview';
 }
+

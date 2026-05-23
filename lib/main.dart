@@ -9,19 +9,18 @@ import 'core/localization/app_localization.dart';
 import 'core/localization/cubit/locale_cubit.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/cubit/theme_cubit.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
-  // Initialise Supabase
   await Supabase.initialize(
     url: SupabaseConstants.url,
     anonKey: SupabaseConstants.anonKey,
   );
 
-  // Initialise DI
   await initDependencies();
 
   runApp(
@@ -45,12 +44,16 @@ class MizanApp extends StatefulWidget {
 class _MizanAppState extends State<MizanApp> {
   late final AuthCubit _authCubit;
   late final AppRouter _appRouter;
+  late final LocaleCubit _localeCubit;
+  late final ThemeCubit _themeCubit;
 
   @override
   void initState() {
     super.initState();
     _authCubit = sl<AuthCubit>();
     _appRouter = sl<AppRouter>();
+    _localeCubit = LocaleCubit();
+    _themeCubit = ThemeCubit()..loadTheme();
     _authCubit.checkAuthStatus();
   }
 
@@ -58,25 +61,24 @@ class _MizanAppState extends State<MizanApp> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => LocaleCubit()),
+        BlocProvider.value(value: _localeCubit..syncFromLocale(context.locale)),
+        BlocProvider.value(value: _themeCubit),
         BlocProvider.value(value: _authCubit),
       ],
-      child: MaterialApp.router(
-        title: 'Mizan',
-        debugShowCheckedModeBanner: false,
-
-        // ──────── Localization ────────
-        localizationsDelegates: context.localizationDelegates,
-        supportedLocales: context.supportedLocales,
-        locale: context.locale,
-
-        // ──────── Theme ──────────────
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.system,
-
-        // ──────── Router ─────────────
-        routerConfig: _appRouter.router,
+      child: BlocBuilder<ThemeCubit, ThemeMode>(
+        builder: (context, themeMode) {
+          return MaterialApp.router(
+            title: 'Mizan',
+            debugShowCheckedModeBanner: false,
+            localizationsDelegates: context.localizationDelegates,
+            supportedLocales: context.supportedLocales,
+            locale: context.locale,
+            theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            themeMode: themeMode,
+            routerConfig: _appRouter.router,
+          );
+        },
       ),
     );
   }

@@ -9,6 +9,7 @@ import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
+import '../widgets/auth_preferences_appbar_actions.dart';
 import '../widgets/auth_widgets.dart';
 
 class RegisterView extends StatefulWidget {
@@ -78,6 +79,9 @@ class _RegisterViewState extends State<RegisterView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.colors.background,
+      // appBar: AppBar(
+      //   actions: const [AuthPreferencesAppBarActions()],
+      // ),
       body: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is RegisterFailure) {
@@ -355,7 +359,7 @@ class _RegisterViewState extends State<RegisterView> {
         AppSpacing.gapH16,
         _buildFormRow(jobTitleField, countryField),
         AppSpacing.gapH16,
-        _buildFormRow(cityField, null),
+        cityField,
       ],
     );
   }

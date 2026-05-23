@@ -181,5 +181,10 @@
     "recent_transactions": "المعاملات الأخيرة",
     "quick_actions": "إجراءات سريعة",
     "overview": "نظرة عامة"
-  }
+  },
+    "english":  "الإنجليزية",
+    "arabic":  "العربية",
+    "switch_to_dark":  "التبديل إلى الوضع الداكن",
+    "switch_to_light":  "التبديل إلى الوضع الفاتح",
+    "change_language":  "تغيير اللغة"
 }

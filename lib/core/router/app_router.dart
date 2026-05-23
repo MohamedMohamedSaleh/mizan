@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -6,7 +8,9 @@ import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/cubit/auth_state.dart';
 import '../../features/auth/presentation/views/forgot_password_view.dart';
 import '../../features/auth/presentation/views/login_view.dart';
+import '../../features/auth/presentation/views/login_otp_view.dart';
 import '../../features/auth/presentation/views/register_view.dart';
+import '../../features/dashboard/presentation/views/dashboard_view.dart';
 import 'route_names.dart';
 
 /// Application router powered by [GoRouter].
@@ -25,10 +29,11 @@ class AppRouter {
     // ──────── Auth Redirect ────────
     redirect: (context, state) {
       final authState = _authCubit.state;
-      final isAuthenticated = authState is AuthAuthenticated;
+      final isAuthenticated = authState is Authenticated;
 
       final isOnAuthPage = state.matchedLocation == RoutePaths.login ||
           state.matchedLocation == RoutePaths.register ||
+          state.matchedLocation == RoutePaths.loginOtp ||
           state.matchedLocation == RoutePaths.forgotPassword;
 
       // Not authenticated and trying to access protected page → login
@@ -60,6 +65,11 @@ class AppRouter {
         builder: (context, state) => const RegisterView(),
       ),
       GoRoute(
+        path: RoutePaths.loginOtp,
+        name: RouteNames.loginOtp,
+        builder: (context, state) => const LoginOtpView(),
+      ),
+      GoRoute(
         path: RoutePaths.forgotPassword,
         name: RouteNames.forgotPassword,
         builder: (context, state) => const ForgotPasswordView(),
@@ -69,38 +79,10 @@ class AppRouter {
       GoRoute(
         path: RoutePaths.dashboard,
         name: RouteNames.dashboard,
-        builder: (context, state) => const _DashboardPlaceholder(),
+        builder: (context, state) => const DashboardView(),
       ),
     ],
   );
-}
-
-/// Temporary dashboard placeholder until the dashboard feature is built.
-class _DashboardPlaceholder extends StatelessWidget {
-  const _DashboardPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard')),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Dashboard',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => context.read<AuthCubit>().logout(),
-              child: const Text('Logout'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 /// Converts a [Stream] into a [ChangeNotifier] so GoRouter can listen to it.
@@ -110,7 +92,7 @@ class GoRouterRefreshStream extends ChangeNotifier {
     _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
   }
 
-  late final dynamic _subscription;
+  late final StreamSubscription<dynamic> _subscription;
 
   @override
   void dispose() {

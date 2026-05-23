@@ -35,18 +35,31 @@ void main() async {
   );
 }
 
-class MizanApp extends StatelessWidget {
+class MizanApp extends StatefulWidget {
   const MizanApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final authCubit = sl<AuthCubit>()..checkAuthStatus();
-    final appRouter = sl<AppRouter>();
+  State<MizanApp> createState() => _MizanAppState();
+}
 
+class _MizanAppState extends State<MizanApp> {
+  late final AuthCubit _authCubit;
+  late final AppRouter _appRouter;
+
+  @override
+  void initState() {
+    super.initState();
+    _authCubit = sl<AuthCubit>();
+    _appRouter = sl<AppRouter>();
+    _authCubit.checkAuthStatus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => LocaleCubit()),
-        BlocProvider.value(value: authCubit),
+        BlocProvider.value(value: _authCubit),
       ],
       child: MaterialApp.router(
         title: 'Mizan',
@@ -63,7 +76,7 @@ class MizanApp extends StatelessWidget {
         themeMode: ThemeMode.system,
 
         // ──────── Router ─────────────
-        routerConfig: appRouter.router,
+        routerConfig: _appRouter.router,
       ),
     );
   }

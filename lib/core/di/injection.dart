@@ -9,6 +9,8 @@ import '../../features/auth/domain/usecases/get_current_user_usecase.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/auth/domain/usecases/register_usecase.dart';
+import '../../features/auth/domain/usecases/send_email_otp_usecase.dart';
+import '../../features/auth/domain/usecases/verify_email_otp_usecase.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../router/app_router.dart';
 
@@ -39,15 +41,19 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => LogoutUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => GetCurrentUserUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => ForgotPasswordUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(() => SendEmailOtpUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(() => VerifyEmailOtpUseCase(sl<AuthRepository>()));
 
   // ──────────── Cubits ───────────────
-  sl.registerFactory(
+  sl.registerLazySingleton(
     () => AuthCubit(
       loginUseCase: sl<LoginUseCase>(),
       registerUseCase: sl<RegisterUseCase>(),
       logoutUseCase: sl<LogoutUseCase>(),
       getCurrentUserUseCase: sl<GetCurrentUserUseCase>(),
       forgotPasswordUseCase: sl<ForgotPasswordUseCase>(),
+      sendEmailOtpUseCase: sl<SendEmailOtpUseCase>(),
+      verifyEmailOtpUseCase: sl<VerifyEmailOtpUseCase>(),
     ),
   );
 

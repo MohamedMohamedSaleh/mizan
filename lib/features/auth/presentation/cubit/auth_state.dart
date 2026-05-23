@@ -21,8 +21,8 @@ class AuthLoading extends AuthState {
 }
 
 /// User is authenticated.
-class AuthAuthenticated extends AuthState {
-  const AuthAuthenticated(this.user);
+class Authenticated extends AuthState {
+  const Authenticated(this.user);
   final UserEntity user;
 
   @override
@@ -30,8 +30,8 @@ class AuthAuthenticated extends AuthState {
 }
 
 /// User is not authenticated.
-class AuthUnauthenticated extends AuthState {
-  const AuthUnauthenticated();
+class Unauthenticated extends AuthState {
+  const Unauthenticated();
 }
 
 /// An auth operation failed.
@@ -43,7 +43,52 @@ class AuthError extends AuthState {
   List<Object?> get props => [message];
 }
 
+/// Register operation succeeded and a session is active.
+class RegisterSuccess extends AuthState {
+  const RegisterSuccess(this.user);
+  final UserEntity user;
+
+  @override
+  List<Object?> get props => [user];
+}
+
+/// Register succeeded but user must confirm email before login/session.
+class EmailConfirmationRequired extends AuthState {
+  const EmailConfirmationRequired({required this.message});
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
+}
+
 /// Password reset email was sent successfully.
 class AuthPasswordResetSent extends AuthState {
   const AuthPasswordResetSent();
 }
+
+class OtpInitial extends AuthState {
+  const OtpInitial();
+}
+
+class SendingOtp extends AuthState {
+  const SendingOtp();
+}
+
+class OtpSent extends AuthState {
+  const OtpSent({required this.email});
+  final String email;
+
+  @override
+  List<Object?> get props => [email];
+}
+
+class VerifyingOtp extends AuthState {
+  const VerifyingOtp({required this.email});
+  final String email;
+
+  @override
+  List<Object?> get props => [email];
+}
+
+typedef AuthAuthenticated = Authenticated;
+typedef AuthUnauthenticated = Unauthenticated;

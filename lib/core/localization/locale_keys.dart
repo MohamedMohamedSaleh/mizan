@@ -32,8 +32,30 @@ abstract final class LocaleKeys {
   static const String authConfirmPassword = 'auth.confirm_password';
   static const String authFullName = 'auth.full_name';
   static const String authBusinessName = 'auth.business_name';
+  static const String authCompanyName = 'auth.company_name';
   static const String authPhoneNumber = 'auth.phone_number';
+  static const String authJobTitle = 'auth.job_title';
+  static const String authCountry = 'auth.country';
+  static const String authCity = 'auth.city';
+  static const String authAcceptTerms = 'auth.accept_terms';
+  static const String authAcceptTermsRequired = 'auth.accept_terms_required';
+  static const String authEmailConfirmationRequired =
+      'auth.email_confirmation_required';
   static const String authForgotPassword = 'auth.forgot_password';
+  static const String authLoginWithOtpEmail = 'auth.login_with_otp_email';
+  static const String authEnterEmailToReceiveOtp =
+      'auth.enter_email_to_receive_otp';
+  static const String authSendOtp = 'auth.send_otp';
+  static const String authOtpSentSuccessfully = 'auth.otp_sent_successfully';
+  static const String authEnterOtpCode = 'auth.enter_otp_code';
+  static const String authVerifyOtp = 'auth.verify_otp';
+  static const String authResendOtp = 'auth.resend_otp';
+  static const String authBackToLogin = 'auth.back_to_login';
+  static const String authInvalidEmail = 'auth.invalid_email';
+  static const String authOtpRequired = 'auth.otp_required';
+  static const String authInvalidOrExpiredOtp = 'auth.invalid_or_expired_otp';
+  static const String authNoAccountFoundForEmail = 'auth.no_account_found_for_email';
+  static const String authLoginSuccessful = 'auth.login_successful';
   static const String authResetPassword = 'auth.reset_password';
   static const String authResetPasswordDesc = 'auth.reset_password_desc';
   static const String authResetPasswordSuccess = 'auth.reset_password_success';
@@ -121,6 +143,7 @@ abstract final class LocaleKeys {
   static const String messagesRequiredField = 'messages.required_field';
   static const String messagesInvalidEmail = 'messages.invalid_email';
   static const String messagesPasswordMin = 'messages.password_min';
+  static const String messagesPasswordMin8 = 'messages.password_min_8';
   static const String messagesPasswordsNotMatch = 'messages.passwords_not_match';
   static const String messagesEntryNotBalanced = 'messages.entry_not_balanced';
   static const String messagesEntrySaved = 'messages.entry_saved';

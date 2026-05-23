@@ -1,4 +1,5 @@
 import '../../../../core/utils/result.dart';
+import '../entities/register_result_entity.dart';
 import '../entities/user_entity.dart';
 
 /// Abstract contract for authentication operations.
@@ -12,12 +13,15 @@ abstract class AuthRepository {
   });
 
   /// Create a new account.
-  Future<Result<UserEntity>> register({
+  Future<Result<RegisterResultEntity>> register({
     required String email,
     required String password,
     required String fullName,
-    required String businessName,
     required String phoneNumber,
+    required String companyName,
+    required String jobTitle,
+    required String country,
+    required String city,
   });
 
   /// Sign out the current user.
@@ -28,4 +32,13 @@ abstract class AuthRepository {
 
   /// Send a password-reset email.
   Future<Result<void>> forgotPassword({required String email});
+
+  /// Send email OTP for existing users only.
+  Future<Result<void>> sendEmailOtp({required String email});
+
+  /// Verify email OTP code and return authenticated user.
+  Future<Result<UserEntity>> verifyEmailOtp({
+    required String email,
+    required String otp,
+  });
 }

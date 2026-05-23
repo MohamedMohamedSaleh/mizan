@@ -6,6 +6,8 @@ import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
+import '../../domain/usecases/send_email_otp_usecase.dart';
+import '../../domain/usecases/verify_email_otp_usecase.dart';
 import 'auth_state.dart';
 
 /// Manages authentication state across the app.
@@ -19,11 +21,15 @@ class AuthCubit extends Cubit<AuthState> {
     required LogoutUseCase logoutUseCase,
     required GetCurrentUserUseCase getCurrentUserUseCase,
     required ForgotPasswordUseCase forgotPasswordUseCase,
+    required SendEmailOtpUseCase sendEmailOtpUseCase,
+    required VerifyEmailOtpUseCase verifyEmailOtpUseCase,
   })  : _loginUseCase = loginUseCase,
         _registerUseCase = registerUseCase,
         _logoutUseCase = logoutUseCase,
         _getCurrentUserUseCase = getCurrentUserUseCase,
         _forgotPasswordUseCase = forgotPasswordUseCase,
+        _sendEmailOtpUseCase = sendEmailOtpUseCase,
+        _verifyEmailOtpUseCase = verifyEmailOtpUseCase,
         super(const AuthInitial());
 
   final LoginUseCase _loginUseCase;
@@ -31,18 +37,20 @@ class AuthCubit extends Cubit<AuthState> {
   final LogoutUseCase _logoutUseCase;
   final GetCurrentUserUseCase _getCurrentUserUseCase;
   final ForgotPasswordUseCase _forgotPasswordUseCase;
+  final SendEmailOtpUseCase _sendEmailOtpUseCase;
+  final VerifyEmailOtpUseCase _verifyEmailOtpUseCase;
 
   /// Check if a user session already exists.
   Future<void> checkAuthStatus() async {
     emit(const AuthLoading());
     final result = await _getCurrentUserUseCase(const NoParams());
     result.fold(
-      (failure) => emit(const AuthUnauthenticated()),
+      (failure) => emit(const Unauthenticated()),
       (user) {
         if (user != null) {
-          emit(AuthAuthenticated(user));
+          emit(Authenticated(user));
         } else {
-          emit(const AuthUnauthenticated());
+          emit(const Unauthenticated());
         }
       },
     );
@@ -59,7 +67,7 @@ class AuthCubit extends Cubit<AuthState> {
     );
     result.fold(
       (failure) => emit(AuthError(failure.message)),
-      (user) => emit(AuthAuthenticated(user)),
+      (user) => emit(Authenticated(user)),
     );
   }
 
@@ -68,8 +76,11 @@ class AuthCubit extends Cubit<AuthState> {
     required String email,
     required String password,
     required String fullName,
-    required String businessName,
     required String phoneNumber,
+    required String companyName,
+    required String jobTitle,
+    required String country,
+    required String city,
   }) async {
     emit(const AuthLoading());
     final result = await _registerUseCase(
@@ -77,13 +88,29 @@ class AuthCubit extends Cubit<AuthState> {
         email: email,
         password: password,
         fullName: fullName,
-        businessName: businessName,
         phoneNumber: phoneNumber,
+        companyName: companyName,
+        jobTitle: jobTitle,
+        country: country,
+        city: city,
       ),
     );
     result.fold(
       (failure) => emit(AuthError(failure.message)),
-      (user) => emit(AuthAuthenticated(user)),
+      (registerResult) {
+        if (registerResult.requiresEmailConfirmation) {
+          emit(
+            const EmailConfirmationRequired(
+              message: 'Please check your email to confirm your account.',
+            ),
+          );
+          emit(const Unauthenticated());
+          return;
+        }
+
+        emit(RegisterSuccess(registerResult.user));
+        emit(Authenticated(registerResult.user));
+      },
     );
   }
 
@@ -93,7 +120,7 @@ class AuthCubit extends Cubit<AuthState> {
     final result = await _logoutUseCase(const NoParams());
     result.fold(
       (failure) => emit(AuthError(failure.message)),
-      (_) => emit(const AuthUnauthenticated()),
+      (_) => emit(const Unauthenticated()),
     );
   }
 
@@ -106,6 +133,31 @@ class AuthCubit extends Cubit<AuthState> {
     result.fold(
       (failure) => emit(AuthError(failure.message)),
       (_) => emit(const AuthPasswordResetSent()),
+    );
+  }
+
+  Future<void> sendEmailOtp({required String email}) async {
+    emit(const SendingOtp());
+    final result = await _sendEmailOtpUseCase(
+      SendEmailOtpParams(email: email),
+    );
+    result.fold(
+      (failure) => emit(AuthError(failure.message)),
+      (_) => emit(OtpSent(email: email)),
+    );
+  }
+
+  Future<void> verifyEmailOtp({
+    required String email,
+    required String otp,
+  }) async {
+    emit(VerifyingOtp(email: email));
+    final result = await _verifyEmailOtpUseCase(
+      VerifyEmailOtpParams(email: email, otp: otp),
+    );
+    result.fold(
+      (failure) => emit(AuthError(failure.message)),
+      (user) => emit(Authenticated(user)),
     );
   }
 }

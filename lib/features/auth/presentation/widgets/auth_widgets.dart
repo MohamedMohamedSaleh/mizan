@@ -109,15 +109,24 @@ class AuthPrimaryButton extends StatelessWidget {
 
 /// Card-like container for auth forms — adapts to screen size.
 class AuthFormCard extends StatelessWidget {
-  const AuthFormCard({super.key, required this.child});
+  const AuthFormCard({
+    super.key,
+    required this.child,
+    this.maxWidthMobile,
+    this.maxWidthTablet,
+    this.maxWidthDesktop,
+  });
   final Widget child;
+  final double? maxWidthMobile;
+  final double? maxWidthTablet;
+  final double? maxWidthDesktop;
 
   @override
   Widget build(BuildContext context) {
     final maxWidth = context.responsive(
-      mobile: double.infinity,
-      tablet: 460.0,
-      desktop: 480.0,
+      mobile: maxWidthMobile ?? double.infinity,
+      tablet: maxWidthTablet ?? 460.0,
+      desktop: maxWidthDesktop ?? 480.0,
     );
 
     return Center(

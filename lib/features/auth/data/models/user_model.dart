@@ -29,8 +29,8 @@ class UserModel {
       id: user.id,
       email: user.email ?? '',
       fullName: meta?['full_name'] as String?,
-      businessName: meta?['business_name'] as String?,
-      phoneNumber: meta?['phone_number'] as String?,
+      businessName: (meta?['company_name'] ?? meta?['business_name']) as String?,
+      phoneNumber: (meta?['phone'] ?? meta?['phone_number']) as String?,
       avatarUrl: meta?['avatar_url'] as String?,
       createdAt: DateTime.tryParse(user.createdAt),
     );

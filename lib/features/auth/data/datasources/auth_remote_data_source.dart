@@ -1,20 +1,27 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../models/register_result_model.dart';
 import '../models/user_model.dart';
 
 /// Contract for remote auth operations.
 abstract class AuthRemoteDataSource {
   Future<UserModel> login({required String email, required String password});
-  Future<UserModel> register({
+  Future<RegisterResultModel> register({
     required String email,
     required String password,
     required String fullName,
-    required String businessName,
     required String phoneNumber,
+    required String companyName,
+    required String jobTitle,
+    required String country,
+    required String city,
   });
   Future<void> logout();
   UserModel? getCurrentUser();
   Future<void> forgotPassword({required String email});
+  Future<void> sendEmailOtp({required String email});
+  Future<UserModel> verifyEmailOtp({required String email, required String otp});
 }
 
 /// Implementation backed by Supabase Auth.
@@ -39,25 +46,57 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<UserModel> register({
+  Future<RegisterResultModel> register({
     required String email,
     required String password,
     required String fullName,
-    required String businessName,
     required String phoneNumber,
+    required String companyName,
+    required String jobTitle,
+    required String country,
+    required String city,
   }) async {
-    final response = await _auth.signUp(
-      email: email,
-      password: password,
-      data: {
-        'full_name': fullName,
-        'business_name': businessName,
-        'phone_number': phoneNumber,
-      },
-    );
-    final user = response.user;
-    if (user == null) throw Exception('Registration failed: no user returned');
-    return UserModel.fromSupabaseUser(user);
+    try {
+      final response = await _auth.signUp(
+        email: email,
+        password: password,
+        data: {
+          'full_name': fullName,
+          'phone': phoneNumber,
+          'company_name': companyName,
+          'job_title': jobTitle,
+          'country': country,
+          'city': city,
+        },
+      );
+      final user = response.user;
+      if (user == null)
+        throw Exception('Registration failed: no user returned');
+      final hasSession = response.session != null;
+      final requiresEmailConfirmation = !hasSession;
+
+      if (hasSession) {
+        await _client.from('profiles').upsert({
+          'id': user.id,
+          'full_name': fullName,
+          'email': email,
+          'phone': phoneNumber,
+          'company_name': companyName,
+          'job_title': jobTitle,
+          'country': country,
+          'city': city,
+        });
+      }
+
+      return RegisterResultModel(
+        user: UserModel.fromSupabaseUser(user),
+        hasActiveSession: hasSession,
+        requiresEmailConfirmation: requiresEmailConfirmation,
+      );
+    } on Exception catch (e) {
+      debugPrint(e.toString());
+      throw Exception('Registration failed: $e');
+    }
   }
 
   @override
@@ -75,5 +114,33 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> forgotPassword({required String email}) async {
     await _auth.resetPasswordForEmail(email);
+  }
+
+  @override
+  Future<void> sendEmailOtp({required String email}) async {
+    await _auth.signInWithOtp(
+      email: email,
+      shouldCreateUser: false,
+    );
+  }
+
+  @override
+  Future<UserModel> verifyEmailOtp({
+    required String email,
+    required String otp,
+  }) async {
+    final response = await _auth.verifyOTP(
+      email: email,
+      token: otp,
+      type: OtpType.email,
+    );
+
+    final user = response.user;
+    final session = response.session;
+    if (user == null || session == null) {
+      throw Exception('OTP verification failed: no active session');
+    }
+
+    return UserModel.fromSupabaseUser(user);
   }
 }

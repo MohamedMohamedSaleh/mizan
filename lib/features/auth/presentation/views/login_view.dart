@@ -113,8 +113,8 @@ class _LoginViewState extends State<LoginView> {
                           if (v == null || v.isEmpty) {
                             return LocaleKeys.messagesRequiredField.tr();
                           }
-                          if (v.length < 6) {
-                            return LocaleKeys.messagesPasswordMin.tr();
+                          if (v.length < 8) {
+                            return LocaleKeys.messagesPasswordMin8.tr();
                           }
                           return null;
                         },
@@ -125,8 +125,8 @@ class _LoginViewState extends State<LoginView> {
                       Align(
                         alignment: AlignmentDirectional.centerEnd,
                         child: TextButton(
-                          onPressed: () => context.pushNamed(RouteNames.forgotPassword),
-                          child: Text(LocaleKeys.authForgotPassword.tr()),
+                          onPressed: () => context.replace(RoutePaths.loginOtp),
+                          child: Text(LocaleKeys.authLoginWithOtpEmail.tr()),
                         ),
                       ),
                       AppSpacing.gapH16,
@@ -154,7 +154,7 @@ class _LoginViewState extends State<LoginView> {
                                 ),
                           ),
                           TextButton(
-                            onPressed: () => context.pushNamed(RouteNames.register),
+                            onPressed: () => context.replace(RoutePaths.register),
                             child: Text(LocaleKeys.authRegister.tr()),
                           ),
                         ],

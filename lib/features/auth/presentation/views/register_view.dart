@@ -352,18 +352,18 @@ class _RegisterViewState extends State<RegisterView> {
         AppSpacing.gapH16,
         _buildFormRow(jobTitleField, countryField),
         AppSpacing.gapH16,
-        cityField,
+        _buildFormRow(cityField, null),
       ],
     );
   }
 
-  Widget _buildFormRow(Widget first, Widget second) {
+  Widget _buildFormRow(Widget first, Widget? second) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(child: first),
         AppSpacing.gapW16,
-        Expanded(child: second),
+        Expanded(child: second??SizedBox()),
       ],
     );
   }

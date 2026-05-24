@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+export 'auth_phone_field.dart';
+
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -17,6 +19,7 @@ class AuthTextField extends StatelessWidget {
     this.keyboardType,
     this.textInputAction,
     this.validator,
+    this.onChanged,
     this.onFieldSubmitted,
     this.autofillHints,
     this.textDirection,
@@ -31,6 +34,7 @@ class AuthTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final String? Function(String?)? validator;
+  final void Function(String)? onChanged;
   final void Function(String)? onFieldSubmitted;
   final Iterable<String>? autofillHints;
   final TextDirection? textDirection;
@@ -53,6 +57,7 @@ class AuthTextField extends StatelessWidget {
           keyboardType: keyboardType,
           textInputAction: textInputAction,
           validator: validator,
+          onChanged: onChanged,
           onFieldSubmitted: onFieldSubmitted,
           autofillHints: autofillHints,
           textDirection: textDirection,

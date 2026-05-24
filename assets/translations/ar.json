@@ -60,7 +60,12 @@
     "no_account": "ليس لديك حساب؟",
     "have_account": "لديك حساب بالفعل؟",
     "login_success": "تم تسجيل الدخول بنجاح",
-    "register_success": "تم إنشاء الحساب بنجاح"
+    "register_success": "تم إنشاء الحساب بنجاح",
+    "select_country": "حدد الدولة",
+    "invalid_phone_number": "رقم الهاتف غير صالح",
+    "phone_number_required": "رقم الهاتف مطلوب",
+    "saudi_phone_length_error": "يجب أن يكون رقم الهاتف السعودي مكوناً من 9 أرقام",
+    "egypt_phone_length_error": "يجب أن يكون رقم الهاتف المصري مكوناً من 10 أرقام"
   },
   "fields": {
     "amount": "المبلغ",

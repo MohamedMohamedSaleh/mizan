@@ -1,4 +1,4 @@
-﻿/// Central registry of all translation keys used in the app.
+/// Central registry of all translation keys used in the app.
 ///
 /// Instead of hardcoding `'nav.dashboard'.tr()` in widgets, use:
 /// ```dart
@@ -39,6 +39,11 @@ abstract final class LocaleKeys {
   static const String authBusinessName = 'auth.business_name';
   static const String authCompanyName = 'auth.company_name';
   static const String authPhoneNumber = 'auth.phone_number';
+  static const String authPhoneNumberRequired = 'auth.phone_number_required';
+  static const String authInvalidPhoneNumber = 'auth.invalid_phone_number';
+  static const String authSaudiPhoneLengthError = 'auth.saudi_phone_length_error';
+  static const String authEgyptPhoneLengthError = 'auth.egypt_phone_length_error';
+  static const String authSelectCountry = 'auth.select_country';
   static const String authJobTitle = 'auth.job_title';
   static const String authCountry = 'auth.country';
   static const String authCity = 'auth.city';

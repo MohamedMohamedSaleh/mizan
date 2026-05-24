@@ -1,4 +1,4 @@
-﻿{
+{
     "app":  {
                 "name":  "Mizan",
                 "tagline":  "Integrated Accounting System"
@@ -60,7 +60,12 @@
                  "no_account":  "Don\u0027t have an account?",
                  "have_account":  "Already have an account?",
                  "login_success":  "Login successful",
-                 "register_success":  "Registration successful"
+                 "register_success":  "Registration successful",
+                 "select_country":  "Select country",
+                 "invalid_phone_number":  "Invalid phone number",
+                 "phone_number_required":  "Phone number is required",
+                 "saudi_phone_length_error":  "Saudi phone number must be 9 digits",
+                 "egypt_phone_length_error":  "Egypt phone number must be 10 digits"
              },
     "fields":  {
                    "amount":  "Amount",

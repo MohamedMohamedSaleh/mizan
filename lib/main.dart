@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_country_selector/flutter_country_selector.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:toastification/toastification.dart';
 
@@ -72,7 +73,12 @@ class _MizanAppState extends State<MizanApp> {
             child: MaterialApp.router(
               title: 'Mizan',
               debugShowCheckedModeBanner: false,
-              localizationsDelegates: context.localizationDelegates,
+              localizationsDelegates: [
+                ...context.localizationDelegates,
+                ...context.supportedLocales.map(
+                  (e) => CountrySelectorLocalization.delegate,
+                ),
+              ],
               supportedLocales: context.supportedLocales,
               locale: context.locale,
               theme: AppTheme.light,

@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_country_selector/flutter_country_selector.dart';
 
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/localization/locale_keys.dart';
@@ -24,29 +26,54 @@ class _RegisterViewState extends State<RegisterView> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _companyNameController = TextEditingController();
   final _jobTitleController = TextEditingController();
   final _countryController = TextEditingController();
   final _cityController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _phoneController = TextEditingController();
 
+  String _selectedDialCode = '+966';
+  String _selectedCountryCode = 'SA';
+  String _completePhoneNumber = '+966';
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _acceptedTerms = false;
+  bool _countryManuallyEdited = false;
+  bool _updatingCountryFromPhone = false;
+
+  String _localizedCountryName(BuildContext context, IsoCode isoCode) {
+    final localization =
+        CountrySelectorLocalization.of(context) ??
+        lookupCountrySelectorLocalization(context.locale);
+    return localization.countryName(isoCode);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_countryManuallyEdited && _countryController.text.trim().isEmpty) {
+      _countryController.text = _localizedCountryName(context, IsoCode.SA);
+    }
+  }
 
   @override
   void dispose() {
     _fullNameController.dispose();
     _emailController.dispose();
-    _phoneController.dispose();
     _companyNameController.dispose();
     _jobTitleController.dispose();
     _countryController.dispose();
     _cityController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -58,15 +85,15 @@ class _RegisterViewState extends State<RegisterView> {
     }
 
     context.read<AuthCubit>().register(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-          fullName: _fullNameController.text.trim(),
-          phoneNumber: _phoneController.text.trim(),
-          companyName: _companyNameController.text.trim(),
-          jobTitle: _jobTitleController.text.trim(),
-          country: _countryController.text.trim(),
-          city: _cityController.text.trim(),
-        );
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+      fullName: _fullNameController.text.trim(),
+      phoneNumber: _completePhoneNumber.trim(),
+      companyName: _companyNameController.text.trim(),
+      jobTitle: _jobTitleController.text.trim(),
+      country: _countryController.text.trim(),
+      city: _cityController.text.trim(),
+    );
   }
 
   String? _requiredValidator(String? v) {
@@ -80,9 +107,7 @@ class _RegisterViewState extends State<RegisterView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.colors.background,
-      appBar: AppBar(
-        actions: const [AuthPreferencesAppBarActions()],
-      ),
+      appBar: AppBar(actions: const [AuthPreferencesAppBarActions()]),
       body: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is RegisterFailure) {
@@ -92,10 +117,7 @@ class _RegisterViewState extends State<RegisterView> {
             context.go(RoutePaths.dashboard);
           } else if (state is RegisterOtpRequired) {
             AppToast.info(context, LocaleKeys.authCheckYourEmailForOtp.tr());
-            context.go(
-              RoutePaths.verifyRegisterOtp,
-              extra: state.payload,
-            );
+            context.go(RoutePaths.verifyRegisterOtp, extra: state.payload);
           }
         },
         child: SafeArea(
@@ -115,7 +137,8 @@ class _RegisterViewState extends State<RegisterView> {
                       AppSpacing.gapH32,
                       LayoutBuilder(
                         builder: (context, constraints) {
-                          final isTwoColumns = MediaQuery.of(context).size.width >= 700;
+                          final isTwoColumns =
+                              MediaQuery.of(context).size.width >= 700;
                           return _buildResponsiveFields(
                             context: context,
                             isTwoColumns: isTwoColumns,
@@ -148,9 +171,8 @@ class _RegisterViewState extends State<RegisterView> {
                         children: [
                           Text(
                             LocaleKeys.authHaveAccount.tr(),
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: context.colors.textSecondary,
-                                ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: context.colors.textSecondary),
                           ),
                           TextButton(
                             onPressed: () => context.replace(RoutePaths.login),
@@ -181,16 +203,16 @@ class _RegisterViewState extends State<RegisterView> {
         Text(
           LocaleKeys.appName.tr(),
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: context.colors.primary,
-                fontWeight: FontWeight.w700,
-              ),
+            color: context.colors.primary,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         AppSpacing.gapH4,
         Text(
           LocaleKeys.authRegister.tr(),
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: context.colors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: context.colors.textSecondary),
         ),
       ],
     );
@@ -200,6 +222,8 @@ class _RegisterViewState extends State<RegisterView> {
     required BuildContext context,
     required bool isTwoColumns,
   }) {
+    // final colors = context.colors;
+
     final fullNameField = AuthTextField(
       controller: _fullNameController,
       label: LocaleKeys.authFullName.tr(),
@@ -284,14 +308,44 @@ class _RegisterViewState extends State<RegisterView> {
       },
     );
 
-    final phoneField = AuthTextField(
+    final phoneField = AuthPhoneField(
       controller: _phoneController,
       label: LocaleKeys.authPhoneNumber.tr(),
-      prefixIcon: Icons.phone_outlined,
-      keyboardType: TextInputType.phone,
-      textInputAction: TextInputAction.next,
-      autofillHints: const [AutofillHints.telephoneNumber],
-      validator: _requiredValidator,
+      initialCountryCode: _selectedCountryCode,
+      onChanged: (completePhone) {
+        _completePhoneNumber = completePhone;
+      },
+      onCountryChanged: (country) {
+        setState(() {
+          _selectedDialCode = country.dialCode ?? '+966';
+          _selectedCountryCode = country.code ?? 'SA';
+        });
+
+        if (_countryManuallyEdited) return;
+        final code = country.code;
+        if (code == null) return;
+
+        try {
+          _updatingCountryFromPhone = true;
+          _countryController.text = _localizedCountryName(
+            context,
+            IsoCode.values.byName(code),
+          );
+        } catch (_) {
+        } finally {
+          _updatingCountryFromPhone = false;
+        }
+      },
+      validator: (value) {
+        final phone = value?.trim() ?? '';
+        if (phone.isEmpty) {
+          return LocaleKeys.authPhoneNumberRequired.tr();
+        }
+        if (phone.length < 8) {
+          return LocaleKeys.authInvalidPhoneNumber.tr();
+        }
+        return null;
+      },
     );
 
     final companyField = AuthTextField(
@@ -314,6 +368,10 @@ class _RegisterViewState extends State<RegisterView> {
       label: LocaleKeys.authCountry.tr(),
       prefixIcon: Icons.public_outlined,
       textInputAction: TextInputAction.next,
+      onChanged: (_) {
+        if (_updatingCountryFromPhone) return;
+        _countryManuallyEdited = true;
+      },
     );
 
     final cityField = AuthTextField(
@@ -360,7 +418,7 @@ class _RegisterViewState extends State<RegisterView> {
         AppSpacing.gapH16,
         _buildFormRow(jobTitleField, countryField),
         AppSpacing.gapH16,
-        cityField,
+        _buildFormRow(cityField, null),
       ],
     );
   }
@@ -371,7 +429,7 @@ class _RegisterViewState extends State<RegisterView> {
       children: [
         Expanded(child: first),
         AppSpacing.gapW16,
-        Expanded(child: second??SizedBox()),
+        Expanded(child: second ?? SizedBox()),
       ],
     );
   }

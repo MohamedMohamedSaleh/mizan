@@ -56,6 +56,7 @@ class AppToast {
       direction: TextDirection.ltr,
       icon: Icon(icon),
       title: Text(message),
+      // ignore: deprecated_member_use
       closeButtonShowType: CloseButtonShowType.onHover,
       dragToClose: true,
       pauseOnHover: true,

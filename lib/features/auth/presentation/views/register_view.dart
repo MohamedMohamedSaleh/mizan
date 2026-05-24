@@ -34,6 +34,7 @@ class _RegisterViewState extends State<RegisterView> {
   final _confirmPasswordController = TextEditingController();
   final _phoneController = TextEditingController();
 
+  // ignore: unused_field
   String _selectedDialCode = '+966';
   String _selectedCountryCode = 'SA';
   String _completePhoneNumber = '+966';

@@ -21,8 +21,14 @@ abstract class AuthRemoteDataSource {
   UserModel? getCurrentUser();
   Future<void> forgotPassword({required String email});
   Future<void> sendEmailOtp({required String email});
-  Future<UserModel> verifyEmailOtp({required String email, required String otp});
-  Future<UserModel> verifyRegisterOtp({required String email, required String otp});
+  Future<UserModel> verifyEmailOtp({
+    required String email,
+    required String otp,
+  });
+  Future<UserModel> verifyRegisterOtp({
+    required String email,
+    required String otp,
+  });
   Future<void> resendRegisterOtp({required String email});
   Future<void> upsertProfile({
     required String userId,
@@ -82,23 +88,24 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
       final user = response.user;
-      if (user == null)
+      if (user == null) {
         throw Exception('Registration failed: no user returned');
+      }
       final hasSession = response.session != null;
       final requiresEmailConfirmation = !hasSession;
 
-    if (hasSession) {
-      await upsertProfile(
-        userId: user.id,
-        fullName: fullName,
-        email: email,
-        phone: phoneNumber,
-        companyName: companyName,
-        jobTitle: jobTitle,
-        country: country,
-        city: city,
-      );
-    }
+      if (hasSession) {
+        await upsertProfile(
+          userId: user.id,
+          fullName: fullName,
+          email: email,
+          phone: phoneNumber,
+          companyName: companyName,
+          jobTitle: jobTitle,
+          country: country,
+          city: city,
+        );
+      }
 
       return RegisterResultModel(
         user: UserModel.fromSupabaseUser(user),
@@ -130,10 +137,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> sendEmailOtp({required String email}) async {
-    await _auth.signInWithOtp(
-      email: email,
-      shouldCreateUser: false,
-    );
+    await _auth.signInWithOtp(email: email, shouldCreateUser: false);
   }
 
   @override
@@ -178,10 +182,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> resendRegisterOtp({required String email}) async {
-    await _auth.resend(
-      email: email,
-      type: OtpType.signup,
-    );
+    await _auth.resend(email: email, type: OtpType.signup);
   }
 
   @override

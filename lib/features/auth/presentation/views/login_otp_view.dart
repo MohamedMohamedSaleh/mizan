@@ -1,7 +1,9 @@
-import 'package:easy_localization/easy_localization.dart';
+import 'dart:async';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pinput/pinput.dart';
 
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/localization/locale_keys.dart';
@@ -27,9 +29,30 @@ class _LoginOtpViewState extends State<LoginOtpView> {
 
   bool _otpSent = false;
   String _email = '';
+  Timer? _timer;
+  int _secondsRemaining = 120;
+
+  void _startTimer() {
+    _timer?.cancel();
+    setState(() {
+      _secondsRemaining = 120;
+    });
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondsRemaining == 0) {
+        setState(() {
+          _timer?.cancel();
+        });
+      } else {
+        setState(() {
+          _secondsRemaining--;
+        });
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _timer?.cancel();
     _emailController.dispose();
     _otpController.dispose();
     super.dispose();
@@ -60,6 +83,7 @@ class _LoginOtpViewState extends State<LoginOtpView> {
               _otpSent = true;
               _email = state.email;
             });
+            _startTimer();
             AppToast.success(context, LocaleKeys.authOtpSentSuccessfully.tr());
           } else if (state is Authenticated) {
             AppToast.success(context, LocaleKeys.authLoginSuccessful.tr());
@@ -145,6 +169,35 @@ class _LoginOtpViewState extends State<LoginOtpView> {
   }
 
   Widget _buildOtpForm(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = context.colors;
+
+    final defaultPinTheme = PinTheme(
+      width: 48,
+      height: 52,
+      textStyle: theme.textTheme.titleLarge?.copyWith(
+        color: colors.textPrimary,
+        fontWeight: FontWeight.bold,
+      ),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: colors.border),
+      ),
+    );
+
+    final focusedPinTheme = defaultPinTheme.copyWith(
+      decoration: defaultPinTheme.decoration!.copyWith(
+        border: Border.all(color: colors.primary, width: 1.4),
+      ),
+    );
+
+    final submittedPinTheme = defaultPinTheme.copyWith(
+      decoration: defaultPinTheme.decoration!.copyWith(
+        color: colors.surface,
+      ),
+    );
+
     return Form(
       key: _otpFormKey,
       child: Column(
@@ -166,19 +219,29 @@ class _LoginOtpViewState extends State<LoginOtpView> {
             textAlign: TextAlign.center,
           ),
           AppSpacing.gapH24,
-          AuthTextField(
-            controller: _otpController,
-            label: LocaleKeys.authEnterOtpCode.tr(),
-            prefixIcon: Icons.password_outlined,
-            keyboardType: TextInputType.number,
-            textInputAction: TextInputAction.done,
-            onFieldSubmitted: (_) => _verifyOtp(),
-            validator: (v) {
-              if (v == null || v.trim().isEmpty) {
-                return LocaleKeys.authOtpRequired.tr();
-              }
-              return null;
-            },
+          Center(
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: Pinput(
+                length: 6,
+                controller: _otpController,
+                defaultPinTheme: defaultPinTheme,
+                focusedPinTheme: focusedPinTheme,
+                submittedPinTheme: submittedPinTheme,
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _verifyOtp(),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return LocaleKeys.authOtpRequired.tr();
+                  }
+                  if (v.trim().length < 6) {
+                    return LocaleKeys.authOtpLengthError.tr();
+                  }
+                  return null;
+                },
+              ),
+            ),
           ),
           AppSpacing.gapH24,
           BlocBuilder<AuthCubit, AuthState>(
@@ -192,9 +255,23 @@ class _LoginOtpViewState extends State<LoginOtpView> {
             },
           ),
           AppSpacing.gapH12,
-          TextButton(
-            onPressed: () => context.read<AuthCubit>().sendEmailOtp(email: _email),
-            child: Text(LocaleKeys.authResendOtp.tr()),
+          BlocBuilder<AuthCubit, AuthState>(
+            builder: (context, state) {
+              final isLoading = state is SendingOtp;
+              return TextButton(
+                onPressed: (isLoading || _secondsRemaining > 0)
+                    ? null
+                    : () {
+                        context.read<AuthCubit>().sendEmailOtp(email: _email);
+                        _startTimer();
+                      },
+                child: Text(
+                  _secondsRemaining > 0
+                      ? '${LocaleKeys.authResendOtp.tr()} (${_secondsRemaining}s)'
+                      : LocaleKeys.authResendOtp.tr(),
+                ),
+              );
+            },
           ),
           TextButton(
             onPressed: () => context.replace(RoutePaths.login),

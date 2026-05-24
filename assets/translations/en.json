@@ -43,6 +43,7 @@
                  "back_to_login":  "Back to Login",
                  "invalid_email":  "Invalid email",
                  "otp_required":  "OTP code is required",
+                 "otp_length_error":  "OTP must be 6 digits",
                  "invalid_or_expired_otp":  "Invalid or expired OTP code.",
                  "no_account_found_for_email":  "No account found for this email.",
                  "login_successful":  "Login successful",

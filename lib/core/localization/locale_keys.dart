@@ -150,6 +150,86 @@ abstract final class LocaleKeys {
   static const String actionsViewAll = 'actions.view_all';
   static const String actionsShowMore = 'actions.show_more';
   static const String actionsShowLess = 'actions.show_less';
+  static const String actionsDuplicate = 'actions.duplicate';
+
+  static const String expensesTitle = 'expenses.title';
+  static const String expensesAdd = 'expenses.add';
+  static const String expensesAddTitle = 'expenses.add_title';
+  static const String expensesEdit = 'expenses.edit';
+  static const String expensesEditTitle = 'expenses.edit_title';
+  static const String expensesDetails = 'expenses.details';
+  static const String expensesDetailsTitle = 'expenses.details_title';
+  static const String expensesCode = 'expenses.code';
+  static const String expensesAmount = 'expenses.amount';
+  static const String expensesCurrency = 'expenses.currency';
+  static const String expensesDescription = 'expenses.description';
+  static const String expensesDate = 'expenses.date';
+  static const String expensesCategory = 'expenses.category';
+  static const String expensesVendor = 'expenses.vendor';
+  static const String expensesPaidFrom = 'expenses.paid_from';
+  static const String expensesSubAccount = 'expenses.sub_account';
+  static const String expensesTax = 'expenses.tax';
+  static const String expensesAttachment = 'expenses.attachment';
+  static const String expensesStatus = 'expenses.status';
+  static const String expensesStatusDraft = 'expenses.status_draft';
+  static const String expensesStatusSaved = 'expenses.status_saved';
+  static const String expensesStatusVoided = 'expenses.status_voided';
+  static const String expensesRecurrenceType = 'expenses.recurrence_type';
+  static const String expensesLast7Days = 'expenses.last_7_days';
+  static const String expensesSummaryLast7Days = 'expenses.summary_last_7_days';
+  static const String expensesLast30Days = 'expenses.last_30_days';
+  static const String expensesSummaryLast30Days =
+      'expenses.summary_last_30_days';
+  static const String expensesLast365Days = 'expenses.last_365_days';
+  static const String expensesSummaryLast365Days =
+      'expenses.summary_last_365_days';
+  static const String expensesSearch = 'expenses.search';
+  static const String expensesSearchHint = 'expenses.search_hint';
+  static const String expensesFilters = 'expenses.filters';
+  static const String expensesClearFilters = 'expenses.clear_filters';
+  static const String expensesJournalPreview = 'expenses.journal_preview';
+  static const String expensesDebit = 'expenses.debit';
+  static const String expensesCredit = 'expenses.credit';
+  static const String expensesAttachmentPlaceholder =
+      'expenses.attachment_placeholder';
+  static const String expensesNoLookups = 'expenses.no_lookups';
+  static const String expensesSeedData = 'expenses.seed_data';
+  static const String expensesSavedWarning = 'expenses.saved_warning';
+  static const String expensesDuplicatePlaceholder =
+      'expenses.duplicate_placeholder';
+  static const String expensesPrintPlaceholder = 'expenses.print_placeholder';
+  static const String expensesLinkedJournal = 'expenses.linked_journal';
+  static const String expensesNoExpenses = 'expenses.no_expenses';
+  static const String expensesSelectCategory = 'expenses.select_category';
+  static const String expensesSelectVendor = 'expenses.select_vendor';
+  static const String expensesSelectPaidAccount = 'expenses.select_paid_account';
+  static const String expensesSelectSubAccount = 'expenses.select_sub_account';
+  static const String expensesSelectTax = 'expenses.select_tax';
+  static const String expensesRecurring = 'expenses.recurring';
+  static const String expensesRecurrenceEndDate = 'expenses.recurrence_end_date';
+  static const String expensesSave = 'expenses.save';
+  static const String expensesSaveDraft = 'expenses.save_draft';
+  static const String expensesCancel = 'expenses.cancel';
+  static const String expensesDelete = 'expenses.delete';
+  static const String expensesVoid = 'expenses.void';
+  static const String expensesConfirmDelete = 'expenses.confirm_delete';
+  static const String expensesLoading = 'expenses.loading';
+  static const String expensesCreatedSuccessfully =
+      'expenses.created_successfully';
+  static const String expensesUpdatedSuccessfully =
+      'expenses.updated_successfully';
+  static const String expensesDeletedSuccessfully =
+      'expenses.deleted_successfully';
+  static const String expensesValidationAmountRequired =
+      'expenses.validation_amount_required';
+  static const String expensesValidationCategoryRequired =
+      'expenses.validation_category_required';
+  static const String expensesValidationPaidFromRequired =
+      'expenses.validation_paid_from_required';
+  static const String expensesValidationDateRequired =
+      'expenses.validation_date_required';
+  static const String expensesValidationJournalNotBalanced =
+      'expenses.validation_journal_not_balanced';
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String messagesSuccess = 'messages.success';

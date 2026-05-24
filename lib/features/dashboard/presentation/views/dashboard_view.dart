@@ -1,9 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/localization/locale_keys.dart';
+import '../../../../core/router/route_names.dart';
 import '../../../../core/services/toast_service.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
@@ -15,6 +17,11 @@ class DashboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final modules = <_DashboardModule>[
+      _DashboardModule(
+        title: LocaleKeys.navExpenses.tr(),
+        icon: Icons.receipt_long_outlined,
+        routePath: RoutePaths.expenses,
+      ),
       _DashboardModule(
         title: LocaleKeys.navFinance.tr(),
         icon: Icons.account_balance_wallet_outlined,
@@ -106,25 +113,31 @@ class _ModuleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 0,
-      child: Padding(
-        padding: AppSpacing.paddingAllLg,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              module.icon,
-              size: 32,
-              color: context.colors.primary,
-            ),
-            AppSpacing.gapH16,
-            Text(
-              module.title,
-              style: context.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
+      child: InkWell(
+        onTap: module.routePath == null
+            ? null
+            : () => context.go(module.routePath!),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: AppSpacing.paddingAllLg,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                module.icon,
+                size: 32,
+                color: context.colors.primary,
               ),
-            ),
-          ],
+              AppSpacing.gapH16,
+              Text(
+                module.title,
+                style: context.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -135,8 +148,10 @@ class _DashboardModule {
   const _DashboardModule({
     required this.title,
     required this.icon,
+    this.routePath,
   });
 
   final String title;
   final IconData icon;
+  final String? routePath;
 }

@@ -1,8 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/expenses/presentation/cubit/add_expense_cubit.dart';
+import '../../features/expenses/presentation/cubit/edit_expense_cubit.dart';
+import '../../features/expenses/presentation/cubit/expense_details_cubit.dart';
+import '../../features/expenses/presentation/cubit/expenses_cubit.dart';
+import '../../features/expenses/presentation/views/add_expense_screen.dart';
+import '../../features/expenses/presentation/views/edit_expense_screen.dart';
+import '../../features/expenses/presentation/views/expense_details_screen.dart';
+import '../../features/expenses/presentation/views/expenses_screen.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/cubit/auth_state.dart';
 import '../../features/auth/presentation/views/forgot_password_view.dart';
@@ -11,6 +20,7 @@ import '../../features/auth/presentation/views/login_otp_view.dart';
 import '../../features/auth/presentation/views/register_view.dart';
 import '../../features/auth/presentation/views/verify_register_otp_view.dart';
 import '../../features/dashboard/presentation/views/dashboard_view.dart';
+import '../di/injection.dart';
 import 'route_names.dart';
 
 /// Application router powered by [GoRouter].
@@ -92,6 +102,44 @@ class AppRouter {
         path: RoutePaths.dashboard,
         name: RouteNames.dashboard,
         builder: (context, state) => const DashboardView(),
+      ),
+      GoRoute(
+        path: RoutePaths.expenses,
+        name: RouteNames.expenses,
+        builder: (context, state) => BlocProvider(
+          create: (_) => sl<ExpensesCubit>(),
+          child: const ExpensesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: RoutePaths.addExpense,
+        name: RouteNames.addExpense,
+        builder: (context, state) => BlocProvider(
+          create: (_) => sl<AddExpenseCubit>(),
+          child: const AddExpenseScreen(),
+        ),
+      ),
+      GoRoute(
+        path: RoutePaths.expenseDetails,
+        name: RouteNames.expenseDetails,
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return BlocProvider(
+            create: (_) => sl<ExpenseDetailsCubit>(),
+            child: ExpenseDetailsScreen(expenseId: id),
+          );
+        },
+      ),
+      GoRoute(
+        path: RoutePaths.editExpense,
+        name: RouteNames.editExpense,
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return BlocProvider(
+            create: (_) => sl<EditExpenseCubit>(),
+            child: EditExpenseScreen(expenseId: id),
+          );
+        },
       ),
     ],
   );

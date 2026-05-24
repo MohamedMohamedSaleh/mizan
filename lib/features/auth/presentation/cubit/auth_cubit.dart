@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/usecases/usecase.dart';
+import '../../../../core/utils/result.dart';
+import '../../../expenses/domain/usecases/seed_accounting_data_usecase.dart';
 import '../../domain/usecases/forgot_password_usecase.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
@@ -29,6 +31,7 @@ class AuthCubit extends Cubit<AuthState> {
     required VerifyRegisterOtpUseCase verifyRegisterOtpUseCase,
     required ResendRegisterOtpUseCase resendRegisterOtpUseCase,
     required UpsertProfileUseCase upsertProfileUseCase,
+    required SeedAccountingDataUseCase seedAccountingDataUseCase,
   })  : _loginUseCase = loginUseCase,
         _registerUseCase = registerUseCase,
         _logoutUseCase = logoutUseCase,
@@ -39,6 +42,7 @@ class AuthCubit extends Cubit<AuthState> {
         _verifyRegisterOtpUseCase = verifyRegisterOtpUseCase,
         _resendRegisterOtpUseCase = resendRegisterOtpUseCase,
         _upsertProfileUseCase = upsertProfileUseCase,
+        _seedAccountingDataUseCase = seedAccountingDataUseCase,
         super(const AuthInitial());
 
   final LoginUseCase _loginUseCase;
@@ -51,15 +55,21 @@ class AuthCubit extends Cubit<AuthState> {
   final VerifyRegisterOtpUseCase _verifyRegisterOtpUseCase;
   final ResendRegisterOtpUseCase _resendRegisterOtpUseCase;
   final UpsertProfileUseCase _upsertProfileUseCase;
+  final SeedAccountingDataUseCase _seedAccountingDataUseCase;
 
   /// Check if a user session already exists.
   Future<void> checkAuthStatus() async {
     emit(const AuthLoading());
     final result = await _getCurrentUserUseCase(const NoParams());
-    result.fold(
-      (failure) => emit(const Unauthenticated()),
-      (user) {
+    await result.fold(
+      (failure) async => emit(const Unauthenticated()),
+      (user) async {
         if (user != null) {
+          final seedFailureMessage = await _seedAccountingData();
+          if (seedFailureMessage != null) {
+            emit(AuthError(seedFailureMessage));
+            return;
+          }
           emit(Authenticated(user));
         } else {
           emit(const Unauthenticated());
@@ -77,9 +87,16 @@ class AuthCubit extends Cubit<AuthState> {
     final result = await _loginUseCase(
       LoginParams(email: email, password: password),
     );
-    result.fold(
-      (failure) => emit(AuthError(failure.message)),
-      (user) => emit(Authenticated(user)),
+    await result.fold(
+      (failure) async => emit(AuthError(failure.message)),
+      (user) async {
+        final seedFailureMessage = await _seedAccountingData();
+        if (seedFailureMessage != null) {
+          emit(AuthError(seedFailureMessage));
+          return;
+        }
+        emit(Authenticated(user));
+      },
     );
   }
 
@@ -107,9 +124,9 @@ class AuthCubit extends Cubit<AuthState> {
         city: city,
       ),
     );
-    result.fold(
-      (failure) => emit(RegisterFailure(failure.message)),
-      (registerResult) {
+    await result.fold(
+      (failure) async => emit(RegisterFailure(failure.message)),
+      (registerResult) async {
         if (registerResult.requiresEmailConfirmation) {
           emit(
             RegisterOtpRequired(
@@ -127,6 +144,11 @@ class AuthCubit extends Cubit<AuthState> {
           return;
         }
 
+        final seedFailureMessage = await _seedAccountingData();
+        if (seedFailureMessage != null) {
+          emit(RegisterFailure(seedFailureMessage));
+          return;
+        }
         emit(RegisterSuccess(registerResult.user));
         emit(Authenticated(registerResult.user));
       },
@@ -174,9 +196,16 @@ class AuthCubit extends Cubit<AuthState> {
     final result = await _verifyEmailOtpUseCase(
       VerifyEmailOtpParams(email: email, otp: otp),
     );
-    result.fold(
-      (failure) => emit(AuthError(failure.message)),
-      (user) => emit(Authenticated(user)),
+    await result.fold(
+      (failure) async => emit(AuthError(failure.message)),
+      (user) async {
+        final seedFailureMessage = await _seedAccountingData();
+        if (seedFailureMessage != null) {
+          emit(AuthError(seedFailureMessage));
+          return;
+        }
+        emit(Authenticated(user));
+      },
     );
   }
 
@@ -205,9 +234,14 @@ class AuthCubit extends Cubit<AuthState> {
           ),
         );
 
-        profileResult.fold(
-          (failure) => emit(RegisterFailure(failure.message)),
-          (_) {
+        await profileResult.fold(
+          (failure) async => emit(RegisterFailure(failure.message)),
+          (_) async {
+            final seedFailureMessage = await _seedAccountingData();
+            if (seedFailureMessage != null) {
+              emit(RegisterFailure(seedFailureMessage));
+              return;
+            }
             emit(RegisterSuccess(user));
             emit(Authenticated(user));
           },
@@ -225,5 +259,11 @@ class AuthCubit extends Cubit<AuthState> {
       (failure) => emit(RegisterFailure(failure.message)),
       (_) => emit(const ResendOtpSuccess()),
     );
+  }
+
+  Future<String?> _seedAccountingData() async {
+    final result = await _seedAccountingDataUseCase(const NoParams());
+    if (result is Error<bool>) return result.failure.message;
+    return null;
   }
 }

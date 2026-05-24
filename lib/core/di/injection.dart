@@ -15,6 +15,38 @@ import '../../features/auth/domain/usecases/upsert_profile_usecase.dart';
 import '../../features/auth/domain/usecases/verify_email_otp_usecase.dart';
 import '../../features/auth/domain/usecases/verify_register_otp_usecase.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
+import '../../features/expenses/data/datasources/accounts_remote_data_source.dart';
+import '../../features/expenses/data/datasources/expense_categories_remote_data_source.dart';
+import '../../features/expenses/data/datasources/expenses_remote_data_source.dart';
+import '../../features/expenses/data/datasources/journal_entries_remote_data_source.dart';
+import '../../features/expenses/data/datasources/taxes_remote_data_source.dart';
+import '../../features/expenses/data/datasources/vendors_remote_data_source.dart';
+import '../../features/expenses/data/repositories/accounts_repository_impl.dart';
+import '../../features/expenses/data/repositories/expense_categories_repository_impl.dart';
+import '../../features/expenses/data/repositories/expenses_repository_impl.dart';
+import '../../features/expenses/data/repositories/journal_entries_repository_impl.dart';
+import '../../features/expenses/data/repositories/taxes_repository_impl.dart';
+import '../../features/expenses/data/repositories/vendors_repository_impl.dart';
+import '../../features/expenses/data/services/accounting_seed_service_impl.dart';
+import '../../features/expenses/domain/repositories/accounts_repository.dart';
+import '../../features/expenses/domain/repositories/expense_categories_repository.dart';
+import '../../features/expenses/domain/repositories/expenses_repository.dart';
+import '../../features/expenses/domain/repositories/journal_entries_repository.dart';
+import '../../features/expenses/domain/repositories/taxes_repository.dart';
+import '../../features/expenses/domain/repositories/vendors_repository.dart';
+import '../../features/expenses/domain/services/accounting_seed_service.dart';
+import '../../features/expenses/domain/usecases/add_expense_usecase.dart';
+import '../../features/expenses/domain/usecases/delete_expense_usecase.dart';
+import '../../features/expenses/domain/usecases/get_expense_details_usecase.dart';
+import '../../features/expenses/domain/usecases/get_expenses_summary_usecase.dart';
+import '../../features/expenses/domain/usecases/get_expenses_usecase.dart';
+import '../../features/expenses/domain/usecases/load_expense_form_lookups_usecase.dart';
+import '../../features/expenses/domain/usecases/seed_accounting_data_usecase.dart';
+import '../../features/expenses/domain/usecases/update_expense_usecase.dart';
+import '../../features/expenses/presentation/cubit/add_expense_cubit.dart';
+import '../../features/expenses/presentation/cubit/edit_expense_cubit.dart';
+import '../../features/expenses/presentation/cubit/expense_details_cubit.dart';
+import '../../features/expenses/presentation/cubit/expenses_cubit.dart';
 import '../router/app_router.dart';
 
 final sl = GetIt.instance;
@@ -32,10 +64,51 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(sl<SupabaseClient>()),
   );
+  sl.registerLazySingleton<ExpensesRemoteDataSource>(
+    () => ExpensesRemoteDataSourceImpl(sl<SupabaseClient>()),
+  );
+  sl.registerLazySingleton<AccountsRemoteDataSource>(
+    () => AccountsRemoteDataSourceImpl(sl<SupabaseClient>()),
+  );
+  sl.registerLazySingleton<ExpenseCategoriesRemoteDataSource>(
+    () => ExpenseCategoriesRemoteDataSourceImpl(sl<SupabaseClient>()),
+  );
+  sl.registerLazySingleton<VendorsRemoteDataSource>(
+    () => VendorsRemoteDataSourceImpl(sl<SupabaseClient>()),
+  );
+  sl.registerLazySingleton<TaxesRemoteDataSource>(
+    () => TaxesRemoteDataSourceImpl(sl<SupabaseClient>()),
+  );
+  sl.registerLazySingleton<JournalEntriesRemoteDataSource>(
+    () => JournalEntriesRemoteDataSourceImpl(sl<SupabaseClient>()),
+  );
+  sl.registerLazySingleton<AccountingSeedService>(
+    () => AccountingSeedServiceImpl(sl<SupabaseClient>()),
+  );
 
   // ──────────── Repositories ─────────
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(sl<AuthRemoteDataSource>()),
+  );
+  sl.registerLazySingleton<ExpensesRepository>(
+    () => ExpensesRepositoryImpl(sl<ExpensesRemoteDataSource>()),
+  );
+  sl.registerLazySingleton<AccountsRepository>(
+    () => AccountsRepositoryImpl(sl<AccountsRemoteDataSource>()),
+  );
+  sl.registerLazySingleton<ExpenseCategoriesRepository>(
+    () => ExpenseCategoriesRepositoryImpl(
+      sl<ExpenseCategoriesRemoteDataSource>(),
+    ),
+  );
+  sl.registerLazySingleton<VendorsRepository>(
+    () => VendorsRepositoryImpl(sl<VendorsRemoteDataSource>()),
+  );
+  sl.registerLazySingleton<TaxesRepository>(
+    () => TaxesRepositoryImpl(sl<TaxesRemoteDataSource>()),
+  );
+  sl.registerLazySingleton<JournalEntriesRepository>(
+    () => JournalEntriesRepositoryImpl(sl<JournalEntriesRemoteDataSource>()),
   );
 
   // ──────────── Use Cases ────────────
@@ -49,6 +122,45 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => VerifyRegisterOtpUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => ResendRegisterOtpUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => UpsertProfileUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(
+    () => SeedAccountingDataUseCase(sl<AccountingSeedService>()),
+  );
+  sl.registerLazySingleton(() => GetExpensesUseCase(sl<ExpensesRepository>()));
+  sl.registerLazySingleton(
+    () => GetExpenseDetailsUseCase(sl<ExpensesRepository>()),
+  );
+  sl.registerLazySingleton(
+    () => GetExpensesSummaryUseCase(sl<ExpensesRepository>()),
+  );
+  sl.registerLazySingleton(
+    () => AddExpenseUseCase(
+      expensesRepository: sl<ExpensesRepository>(),
+      categoriesRepository: sl<ExpenseCategoriesRepository>(),
+      journalEntriesRepository: sl<JournalEntriesRepository>(),
+    ),
+  );
+  sl.registerLazySingleton(
+    () => UpdateExpenseUseCase(
+      expensesRepository: sl<ExpensesRepository>(),
+      categoriesRepository: sl<ExpenseCategoriesRepository>(),
+      journalEntriesRepository: sl<JournalEntriesRepository>(),
+    ),
+  );
+  sl.registerLazySingleton(
+    () => DeleteExpenseUseCase(
+      expensesRepository: sl<ExpensesRepository>(),
+      journalEntriesRepository: sl<JournalEntriesRepository>(),
+    ),
+  );
+  sl.registerLazySingleton(
+    () => LoadExpenseFormLookupsUseCase(
+      accountsRepository: sl<AccountsRepository>(),
+      categoriesRepository: sl<ExpenseCategoriesRepository>(),
+      vendorsRepository: sl<VendorsRepository>(),
+      taxesRepository: sl<TaxesRepository>(),
+      seedAccountingDataUseCase: sl<SeedAccountingDataUseCase>(),
+    ),
+  );
 
   // ──────────── Cubits ───────────────
   sl.registerLazySingleton(
@@ -63,6 +175,36 @@ Future<void> initDependencies() async {
       verifyRegisterOtpUseCase: sl<VerifyRegisterOtpUseCase>(),
       resendRegisterOtpUseCase: sl<ResendRegisterOtpUseCase>(),
       upsertProfileUseCase: sl<UpsertProfileUseCase>(),
+      seedAccountingDataUseCase: sl<SeedAccountingDataUseCase>(),
+    ),
+  );
+  sl.registerFactory(
+    () => ExpensesCubit(
+      getExpensesUseCase: sl<GetExpensesUseCase>(),
+      getExpensesSummaryUseCase: sl<GetExpensesSummaryUseCase>(),
+      deleteExpenseUseCase: sl<DeleteExpenseUseCase>(),
+      loadLookupsUseCase: sl<LoadExpenseFormLookupsUseCase>(),
+    ),
+  );
+  sl.registerFactory(
+    () => AddExpenseCubit(
+      loadLookupsUseCase: sl<LoadExpenseFormLookupsUseCase>(),
+      addExpenseUseCase: sl<AddExpenseUseCase>(),
+    ),
+  );
+  sl.registerFactory(
+    () => ExpenseDetailsCubit(
+      getExpenseDetailsUseCase: sl<GetExpenseDetailsUseCase>(),
+      deleteExpenseUseCase: sl<DeleteExpenseUseCase>(),
+      loadLookupsUseCase: sl<LoadExpenseFormLookupsUseCase>(),
+    ),
+  );
+  sl.registerFactory(
+    () => EditExpenseCubit(
+      loadLookupsUseCase: sl<LoadExpenseFormLookupsUseCase>(),
+      addExpenseUseCase: sl<AddExpenseUseCase>(),
+      getExpenseDetailsUseCase: sl<GetExpenseDetailsUseCase>(),
+      updateExpenseUseCase: sl<UpdateExpenseUseCase>(),
     ),
   );
 

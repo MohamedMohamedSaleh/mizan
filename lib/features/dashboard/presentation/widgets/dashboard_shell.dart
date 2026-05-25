@@ -7,6 +7,7 @@ import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/localization/locale_keys.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/services/toast_service.dart';
+import '../../../../core/widgets/app_logo.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
 import '../../../auth/presentation/widgets/auth_preferences_appbar_actions.dart';
@@ -39,7 +40,19 @@ class DashboardShell extends StatelessWidget {
             appBar: isWide
                 ? null
                 : AppBar(
-                    title: Text(_titleForLocation(items, currentLocation)),
+                    title: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const AppLogo(width: 40, height: 32),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            _titleForLocation(items, currentLocation),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                     leading: Builder(
                       builder: (buttonContext) => IconButton(
                         tooltip: LocaleKeys.navSettings.tr(),

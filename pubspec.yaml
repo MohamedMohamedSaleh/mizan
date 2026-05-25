@@ -59,7 +59,41 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   build_runner: ^2.4.15
   drift_dev: ^2.24.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.4
   json_serializable: ^6.9.5
+
+flutter_launcher_icons:
+  image_path: assets/images/mizan_launcher_icon.png
+  android: true
+  ios: true
+  web:
+    generate: true
+    image_path: assets/images/mizan_launcher_icon.png
+  windows:
+    generate: true
+    image_path: assets/images/mizan_launcher_icon.png
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: assets/images/mizan_launcher_icon.png
+  adaptive_icon_background: "#0F766E"
+  adaptive_icon_foreground: assets/images/mizan_launcher_icon.png
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  color: "#F8FAFC"
+  color_dark: "#0B1120"
+  image: assets/images/mizan_logo.png
+  image_dark: assets/images/mizan_logo.png
+  android: true
+  ios: true
+  web: true
+  android_12:
+    color: "#F8FAFC"
+    color_dark: "#0B1120"
+    image: assets/images/mizan_logo.png
+    image_dark: assets/images/mizan_logo.png
 
 flutter:
   uses-material-design: true

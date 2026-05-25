@@ -4,6 +4,7 @@ import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/localization/locale_keys.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_logo.dart';
 import 'dashboard_nav_item.dart';
 
 class DashboardSidebar extends StatelessWidget {
@@ -114,17 +115,9 @@ class _SidebarHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: context.colors.primary,
-            borderRadius: AppRadius.borderRadiusBase,
-          ),
-          child: Icon(
-            Icons.account_balance_wallet_outlined,
-            color: context.colors.textOnPrimary,
-          ),
+        ClipRRect(
+          borderRadius: AppRadius.borderRadiusSm,
+          child: const AppLogo(width: 72, height: 52),
         ),
         AppSpacing.gapW12,
         Expanded(

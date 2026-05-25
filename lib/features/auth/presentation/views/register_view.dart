@@ -10,6 +10,7 @@ import '../../../../core/localization/locale_keys.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/services/toast_service.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_logo.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
 import '../widgets/auth_preferences_appbar_actions.dart';
@@ -197,12 +198,8 @@ class _RegisterViewState extends State<RegisterView> {
   Widget _buildHeader(BuildContext context) {
     return Column(
       children: [
-        Icon(
-          Icons.account_balance_outlined,
-          size: 48,
-          color: context.colors.primary,
-        ),
-        AppSpacing.gapH12,
+        const AppLogo(width: 180),
+        AppSpacing.gapH16,
         Text(
           LocaleKeys.appName.tr(),
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(

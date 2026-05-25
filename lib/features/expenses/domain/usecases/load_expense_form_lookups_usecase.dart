@@ -3,6 +3,7 @@ import '../../../../core/utils/result.dart';
 import '../entities/account_entity.dart';
 import '../entities/expense_category_entity.dart';
 import '../entities/expense_form_lookups_entity.dart';
+import '../entities/expense_enums.dart';
 import '../entities/tax_entity.dart';
 import '../entities/vendor_entity.dart';
 import '../repositories/accounts_repository.dart';
@@ -31,8 +32,33 @@ class LoadExpenseFormLookupsUseCase
   final TaxesRepository _taxesRepository;
   final SeedAccountingDataUseCase _seedAccountingDataUseCase;
 
+  Result<ExpenseFormLookupsEntity>? _cachedResult;
+  Future<Result<ExpenseFormLookupsEntity>>? _inFlightRequest;
+
+  void invalidateCache() {
+    _cachedResult = null;
+    _inFlightRequest = null;
+  }
+
   @override
   Future<Result<ExpenseFormLookupsEntity>> call(NoParams params) async {
+    final cachedResult = _cachedResult;
+    if (cachedResult != null) return cachedResult;
+
+    final inFlightRequest = _inFlightRequest;
+    if (inFlightRequest != null) return inFlightRequest;
+
+    final request = _loadLookups();
+    _inFlightRequest = request;
+    final result = await request;
+    _inFlightRequest = null;
+    if (result is Success<ExpenseFormLookupsEntity>) {
+      _cachedResult = result;
+    }
+    return result;
+  }
+
+  Future<Result<ExpenseFormLookupsEntity>> _loadLookups() async {
     var accountsResult = await _accountsRepository.getAccounts();
     if (accountsResult is Error<List<AccountEntity>>) {
       return Error(accountsResult.failure);
@@ -48,38 +74,37 @@ class LoadExpenseFormLookupsUseCase
       }
     }
 
-    final paymentAccountsResult = await _accountsRepository.getPaymentAccounts();
-    if (paymentAccountsResult is Error<List<AccountEntity>>) {
-      return Error(paymentAccountsResult.failure);
-    }
+    final accountsAfterSeed =
+        (accountsResult as Success<List<AccountEntity>>).data;
+    final categoriesFuture = _categoriesRepository.getCategories();
+    final vendorsFuture = _vendorsRepository.getVendors();
+    final taxesFuture = _taxesRepository.getTaxes();
 
-    final expenseAccountsResult = await _accountsRepository.getExpenseAccounts();
-    if (expenseAccountsResult is Error<List<AccountEntity>>) {
-      return Error(expenseAccountsResult.failure);
-    }
-
-    final categoriesResult = await _categoriesRepository.getCategories();
+    final categoriesResult = await categoriesFuture;
     if (categoriesResult is Error<List<ExpenseCategoryEntity>>) {
       return Error(categoriesResult.failure);
     }
 
-    final vendorsResult = await _vendorsRepository.getVendors();
+    final vendorsResult = await vendorsFuture;
     if (vendorsResult is Error<List<VendorEntity>>) {
       return Error(vendorsResult.failure);
     }
 
-    final taxesResult = await _taxesRepository.getTaxes();
+    final taxesResult = await taxesFuture;
     if (taxesResult is Error<List<TaxEntity>>) {
       return Error(taxesResult.failure);
     }
 
     return Success(
       ExpenseFormLookupsEntity(
-        accounts: (accountsResult as Success<List<AccountEntity>>).data,
-        paymentAccounts:
-            (paymentAccountsResult as Success<List<AccountEntity>>).data,
-        expenseAccounts:
-            (expenseAccountsResult as Success<List<AccountEntity>>).data,
+        accounts: accountsAfterSeed,
+        paymentAccounts: accountsAfterSeed
+            .where((account) => account.isPaymentAccount && account.isActive)
+            .toList(),
+        expenseAccounts: accountsAfterSeed
+            .where((account) =>
+                account.type == AccountType.expense && account.isActive)
+            .toList(),
         categories:
             (categoriesResult as Success<List<ExpenseCategoryEntity>>).data,
         vendors: (vendorsResult as Success<List<VendorEntity>>).data,

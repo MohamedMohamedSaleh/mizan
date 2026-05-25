@@ -5,9 +5,7 @@ import '../../../../core/utils/result.dart';
 import '../../domain/entities/expense_entity.dart';
 import '../../domain/entities/expense_enums.dart';
 import '../../domain/entities/expense_form_lookups_entity.dart';
-import '../../domain/entities/expenses_summary_entity.dart';
 import '../../domain/usecases/delete_expense_usecase.dart';
-import '../../domain/usecases/get_expenses_summary_usecase.dart';
 import '../../domain/usecases/get_expenses_usecase.dart';
 import '../../domain/usecases/load_expense_form_lookups_usecase.dart';
 import '../view_model/expense_filter_view_model.dart';
@@ -19,17 +17,14 @@ import 'expenses_state.dart';
 class ExpensesCubit extends Cubit<ExpensesState> {
   ExpensesCubit({
     required GetExpensesUseCase getExpensesUseCase,
-    required GetExpensesSummaryUseCase getExpensesSummaryUseCase,
     required DeleteExpenseUseCase deleteExpenseUseCase,
     required LoadExpenseFormLookupsUseCase loadLookupsUseCase,
   })  : _getExpensesUseCase = getExpensesUseCase,
-        _getExpensesSummaryUseCase = getExpensesSummaryUseCase,
         _deleteExpenseUseCase = deleteExpenseUseCase,
         _loadLookupsUseCase = loadLookupsUseCase,
         super(const ExpensesInitial());
 
   final GetExpensesUseCase _getExpensesUseCase;
-  final GetExpensesSummaryUseCase _getExpensesSummaryUseCase;
   final DeleteExpenseUseCase _deleteExpenseUseCase;
   final LoadExpenseFormLookupsUseCase _loadLookupsUseCase;
 
@@ -88,7 +83,8 @@ class ExpensesCubit extends Cubit<ExpensesState> {
   Future<void> deleteExpense(String id) async {
     final result = await _deleteExpenseUseCase(DeleteExpenseParams(id: id));
     result.fold(
-      (failure) => emit(ExpensesError(message: failure.message, filters: _filters)),
+      (failure) =>
+          emit(ExpensesError(message: failure.message, filters: _filters)),
       (_) => refresh(),
     );
   }
@@ -96,36 +92,30 @@ class ExpensesCubit extends Cubit<ExpensesState> {
   Future<void> _load(ExpenseFilterViewModel filters) async {
     emit(ExpensesLoading(filters: filters));
 
-    final summaryResult = await _getExpensesSummaryUseCase(const NoParams());
-    if (summaryResult is Error<ExpensesSummaryEntity>) {
-      emit(ExpensesError(message: summaryResult.failure.message, filters: filters));
-      return;
-    }
-
     final expensesResult = await _getExpensesUseCase(
       GetExpensesParams(filters: filters.toEntity()),
     );
     if (expensesResult is Error<List<ExpenseEntity>>) {
-      emit(ExpensesError(message: expensesResult.failure.message, filters: filters));
+      emit(ExpensesError(
+          message: expensesResult.failure.message, filters: filters));
       return;
     }
 
     final lookupsResult = await _loadLookupsUseCase(const NoParams());
     if (lookupsResult is Error<ExpenseFormLookupsEntity>) {
-      emit(ExpensesError(message: lookupsResult.failure.message, filters: filters));
+      emit(ExpensesError(
+          message: lookupsResult.failure.message, filters: filters));
       return;
     }
 
-    final summary = ExpensesSummaryViewModel.fromEntity(
-      (summaryResult as Success<ExpensesSummaryEntity>).data,
-    );
     final lookups = ExpenseFormLookupsViewModel.fromEntity(
       (lookupsResult as Success<ExpenseFormLookupsEntity>).data,
     );
-    final expenses = (expensesResult as Success<List<ExpenseEntity>>)
-        .data
-        .map(ExpenseListItemViewModel.fromEntity)
-        .toList();
+    final loadedExpenses =
+        (expensesResult as Success<List<ExpenseEntity>>).data;
+    final expenses =
+        loadedExpenses.map(ExpenseListItemViewModel.fromEntity).toList();
+    final summary = _summaryFromExpenses(loadedExpenses);
 
     if (expenses.isEmpty) {
       emit(ExpensesEmpty(summary: summary, filters: filters, lookups: lookups));
@@ -139,6 +129,33 @@ class ExpensesCubit extends Cubit<ExpensesState> {
         filters: filters,
         lookups: lookups,
       ),
+    );
+  }
+
+  ExpensesSummaryViewModel _summaryFromExpenses(List<ExpenseEntity> expenses) {
+    var totalAmount = 0.0;
+    var draftCount = 0;
+    var savedCount = 0;
+    var voidedCount = 0;
+
+    for (final expense in expenses) {
+      totalAmount += expense.amount;
+      switch (expense.status) {
+        case ExpenseStatus.draft:
+          draftCount++;
+        case ExpenseStatus.saved:
+          savedCount++;
+        case ExpenseStatus.voided:
+          voidedCount++;
+      }
+    }
+
+    return ExpensesSummaryViewModel(
+      totalAmount: totalAmount,
+      expensesCount: expenses.length,
+      draftCount: draftCount,
+      savedCount: savedCount,
+      voidedCount: voidedCount,
     );
   }
 }

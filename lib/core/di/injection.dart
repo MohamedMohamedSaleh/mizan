@@ -119,8 +119,10 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => ForgotPasswordUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => SendEmailOtpUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => VerifyEmailOtpUseCase(sl<AuthRepository>()));
-  sl.registerLazySingleton(() => VerifyRegisterOtpUseCase(sl<AuthRepository>()));
-  sl.registerLazySingleton(() => ResendRegisterOtpUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(
+      () => VerifyRegisterOtpUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(
+      () => ResendRegisterOtpUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => UpsertProfileUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(
     () => SeedAccountingDataUseCase(sl<AccountingSeedService>()),
@@ -181,7 +183,6 @@ Future<void> initDependencies() async {
   sl.registerFactory(
     () => ExpensesCubit(
       getExpensesUseCase: sl<GetExpensesUseCase>(),
-      getExpensesSummaryUseCase: sl<GetExpensesSummaryUseCase>(),
       deleteExpenseUseCase: sl<DeleteExpenseUseCase>(),
       loadLookupsUseCase: sl<LoadExpenseFormLookupsUseCase>(),
     ),

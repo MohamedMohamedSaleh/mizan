@@ -26,7 +26,8 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
         _addExpenseUseCase = addExpenseUseCase,
         _vendorsRepository = vendorsRepository,
         _categoriesRepository = categoriesRepository,
-        super(AddExpenseState(code: _generateCode(), expenseDate: DateTime.now()));
+        super(AddExpenseState(
+            code: _generateCode(), expenseDate: DateTime.now()));
 
   final LoadExpenseFormLookupsUseCase _loadLookupsUseCase;
   final AddExpenseUseCase _addExpenseUseCase;
@@ -352,7 +353,9 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
         return null;
       },
       (vendor) {
-        final updatedVendors = List<VendorEntity>.from(state.lookups.vendors)..add(vendor);
+        _loadLookupsUseCase.invalidateCache();
+        final updatedVendors = List<VendorEntity>.from(state.lookups.vendors)
+          ..add(vendor);
         emit(state.copyWith(
           lookups: state.lookups.copyWith(vendors: updatedVendors),
           selectedVendor: vendor,
@@ -375,19 +378,24 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
     }
 
     if (defaultAccount == null) {
-      emit(state.copyWith(errorMessage: 'No expense accounts found to link the category.'));
+      emit(state.copyWith(
+          errorMessage: 'No expense accounts found to link the category.'));
       return null;
     }
 
     emit(state.copyWith(clearErrorMessage: true));
-    final result = await _categoriesRepository.createCategory(name, defaultAccount.id);
+    final result =
+        await _categoriesRepository.createCategory(name, defaultAccount.id);
     return result.fold(
       (failure) {
         emit(state.copyWith(errorMessage: failure.message));
         return null;
       },
       (category) {
-        final updatedCategories = List<ExpenseCategoryEntity>.from(state.lookups.categories)..add(category);
+        _loadLookupsUseCase.invalidateCache();
+        final updatedCategories =
+            List<ExpenseCategoryEntity>.from(state.lookups.categories)
+              ..add(category);
         emit(state.copyWith(
           lookups: state.lookups.copyWith(categories: updatedCategories),
           selectedCategory: category,

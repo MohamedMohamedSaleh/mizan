@@ -12,6 +12,7 @@ class ExpensesRepositoryImpl implements ExpensesRepository {
   ExpensesRepositoryImpl(this._remoteDataSource);
 
   final ExpensesRemoteDataSource _remoteDataSource;
+  final Map<String, ExpenseEntity> _expenseCacheById = {};
 
   @override
   Future<Result<List<ExpenseEntity>>> getExpenses({
@@ -19,43 +20,60 @@ class ExpensesRepositoryImpl implements ExpensesRepository {
   }) {
     return guardExpenseRepositoryCall<List<ExpenseEntity>>(() async {
       final models = await _remoteDataSource.getExpenses(
-        filters: filters == null ? null : ExpenseFiltersModel.fromEntity(filters),
+        filters:
+            filters == null ? null : ExpenseFiltersModel.fromEntity(filters),
       );
-      return models.map((model) => model.toEntity()).toList();
+      final expenses = models.map((model) => model.toEntity()).toList();
+      for (final expense in expenses) {
+        _expenseCacheById[expense.id] = expense;
+      }
+      return expenses;
     });
   }
 
   @override
   Future<Result<ExpenseEntity>> getExpenseById(String id) {
+    final cachedExpense = _expenseCacheById[id];
+    if (cachedExpense != null) return Future.value(Success(cachedExpense));
+
     return guardExpenseRepositoryCall<ExpenseEntity>(() async {
-      return (await _remoteDataSource.getExpenseById(id)).toEntity();
+      final expense = (await _remoteDataSource.getExpenseById(id)).toEntity();
+      _expenseCacheById[expense.id] = expense;
+      return expense;
     });
   }
 
   @override
   Future<Result<ExpenseEntity>> createExpense(ExpenseEntity expense) {
     return guardExpenseRepositoryCall<ExpenseEntity>(() async {
-      return (await _remoteDataSource.createExpense(
+      final createdExpense = (await _remoteDataSource.createExpense(
         ExpenseModel.fromEntity(expense),
       ))
           .toEntity();
+      _expenseCacheById[createdExpense.id] = createdExpense;
+      return createdExpense;
     });
   }
 
   @override
   Future<Result<ExpenseEntity>> updateExpense(ExpenseEntity expense) {
     return guardExpenseRepositoryCall<ExpenseEntity>(() async {
-      return (await _remoteDataSource.updateExpense(
+      final updatedExpense = (await _remoteDataSource.updateExpense(
         ExpenseModel.fromEntity(expense),
       ))
           .toEntity();
+      _expenseCacheById[updatedExpense.id] = updatedExpense;
+      return updatedExpense;
     });
   }
 
   @override
   Future<Result<void>> softDeleteExpense(String id) {
     return guardExpenseRepositoryCall<void>(
-      () => _remoteDataSource.softDeleteExpense(id),
+      () async {
+        await _remoteDataSource.softDeleteExpense(id);
+        _expenseCacheById.remove(id);
+      },
     );
   }
 

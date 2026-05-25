@@ -4,6 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
+import '../../features/auth/presentation/cubit/auth_state.dart';
+import '../../features/auth/presentation/views/auth_splash_view.dart';
+import '../../features/auth/presentation/views/forgot_password_view.dart';
+import '../../features/auth/presentation/views/login_otp_view.dart';
+import '../../features/auth/presentation/views/login_view.dart';
+import '../../features/auth/presentation/views/register_view.dart';
+import '../../features/auth/presentation/views/verify_register_otp_view.dart';
+import '../../features/dashboard/presentation/views/dashboard_view.dart';
 import '../../features/expenses/presentation/cubit/add_expense_cubit.dart';
 import '../../features/expenses/presentation/cubit/edit_expense_cubit.dart';
 import '../../features/expenses/presentation/cubit/expense_details_cubit.dart';
@@ -12,34 +21,22 @@ import '../../features/expenses/presentation/views/add_expense_screen.dart';
 import '../../features/expenses/presentation/views/edit_expense_screen.dart';
 import '../../features/expenses/presentation/views/expense_details_screen.dart';
 import '../../features/expenses/presentation/views/expenses_screen.dart';
-import '../../features/auth/presentation/cubit/auth_cubit.dart';
-import '../../features/auth/presentation/cubit/auth_state.dart';
-import '../../features/auth/presentation/views/forgot_password_view.dart';
-import '../../features/auth/presentation/views/login_view.dart';
-import '../../features/auth/presentation/views/login_otp_view.dart';
-import '../../features/auth/presentation/views/register_view.dart';
-import '../../features/auth/presentation/views/verify_register_otp_view.dart';
-import '../../features/dashboard/presentation/views/dashboard_view.dart';
 import '../di/injection.dart';
 import 'route_names.dart';
 
 /// Application router powered by [GoRouter].
-///
-/// Handles auth redirect logic:
-/// - If user is NOT authenticated → redirect to /login
-/// - If user IS authenticated and on auth pages → redirect to /dashboard
 class AppRouter {
   AppRouter(this._authCubit);
   final AuthCubit _authCubit;
 
   late final GoRouter router = GoRouter(
-    initialLocation: RoutePaths.login,
+    initialLocation: RoutePaths.splash,
     debugLogDiagnostics: true,
-
-    // ──────── Auth Redirect ────────
     redirect: (context, state) {
       final authState = _authCubit.state;
       final isAuthenticated = authState is Authenticated;
+      final hasCheckedInitialSession = _authCubit.hasCheckedInitialSession;
+      final isOnSplash = state.matchedLocation == RoutePaths.splash;
 
       final isOnAuthPage = state.matchedLocation == RoutePaths.login ||
           state.matchedLocation == RoutePaths.register ||
@@ -47,24 +44,33 @@ class AppRouter {
           state.matchedLocation == RoutePaths.verifyRegisterOtp ||
           state.matchedLocation == RoutePaths.forgotPassword;
 
-      // Not authenticated and trying to access protected page → login
+      // Keep users on splash while first session check is running.
+      if (!hasCheckedInitialSession) {
+        return isOnSplash ? null : RoutePaths.splash;
+      }
+
+      // After bootstrap, move away from splash based on current auth state.
+      if (isOnSplash) {
+        return isAuthenticated ? RoutePaths.dashboard : RoutePaths.login;
+      }
+
       if (!isAuthenticated && !isOnAuthPage) {
         return RoutePaths.login;
       }
 
-      // Authenticated but still on auth page → dashboard
       if (isAuthenticated && isOnAuthPage) {
         return RoutePaths.dashboard;
       }
 
-      return null; // no redirect
+      return null;
     },
-
-    // Listen to auth state changes to re-evaluate redirects.
     refreshListenable: GoRouterRefreshStream(_authCubit.stream),
-
     routes: [
-      // ──────── Auth Routes ────────
+      GoRoute(
+        path: RoutePaths.splash,
+        name: RouteNames.splash,
+        builder: (context, state) => const AuthSplashView(),
+      ),
       GoRoute(
         path: RoutePaths.login,
         name: RouteNames.login,
@@ -96,8 +102,6 @@ class AppRouter {
         name: RouteNames.forgotPassword,
         builder: (context, state) => const ForgotPasswordView(),
       ),
-
-      // ──────── Dashboard (temporary placeholder) ────────
       GoRoute(
         path: RoutePaths.dashboard,
         name: RouteNames.dashboard,

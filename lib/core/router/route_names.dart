@@ -1,5 +1,6 @@
 /// Named route constants — use these with `context.goNamed()`.
 abstract final class RouteNames {
+  static const String splash = 'splash';
   static const String login = 'login';
   static const String register = 'register';
   static const String loginOtp = 'login-otp';
@@ -14,6 +15,7 @@ abstract final class RouteNames {
 
 /// Route path constants.
 abstract final class RoutePaths {
+  static const String splash = '/splash';
   static const String login = '/login';
   static const String register = '/register';
   static const String loginOtp = '/login-otp';

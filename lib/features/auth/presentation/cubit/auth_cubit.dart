@@ -56,6 +56,9 @@ class AuthCubit extends Cubit<AuthState> {
   final ResendRegisterOtpUseCase _resendRegisterOtpUseCase;
   final UpsertProfileUseCase _upsertProfileUseCase;
   final SeedAccountingDataUseCase _seedAccountingDataUseCase;
+  bool _hasCheckedInitialSession = false;
+
+  bool get hasCheckedInitialSession => _hasCheckedInitialSession;
 
   /// Check if a user session already exists.
   Future<void> checkAuthStatus() async {
@@ -76,6 +79,7 @@ class AuthCubit extends Cubit<AuthState> {
         }
       },
     );
+    _hasCheckedInitialSession = true;
   }
 
   /// Sign in with email + password.

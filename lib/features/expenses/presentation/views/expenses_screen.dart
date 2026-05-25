@@ -249,13 +249,20 @@ class _MobileSearch extends StatelessWidget {
         Expanded(child: _SearchField(filters: filters)),
         AppSpacing.gapW8,
         IconButton.filledTonal(
-          onPressed: () => showModalBottomSheet<void>(
-            context: context,
-            builder: (_) => Padding(
-              padding: AppSpacing.paddingAllLg,
-              child: _FilterPanel(filters: filters, lookups: lookups),
-            ),
-          ),
+          onPressed: () {
+            final expensesCubit = context.read<ExpensesCubit>();
+            showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              builder: (_) => BlocProvider.value(
+                value: expensesCubit,
+                child: _MobileFilterSheet(
+                  initialFilters: filters,
+                  lookups: lookups,
+                ),
+              ),
+            );
+          },
           icon: const Icon(Icons.filter_list),
           tooltip: LocaleKeys.expensesFilters.tr(),
         ),
@@ -264,10 +271,127 @@ class _MobileSearch extends StatelessWidget {
   }
 }
 
+class _MobileFilterSheet extends StatefulWidget {
+  const _MobileFilterSheet({
+    required this.initialFilters,
+    required this.lookups,
+  });
+
+  final ExpenseFilterViewModel initialFilters;
+  final ExpenseFormLookupsViewModel lookups;
+
+  @override
+  State<_MobileFilterSheet> createState() => _MobileFilterSheetState();
+}
+
+class _MobileFilterSheetState extends State<_MobileFilterSheet> {
+  late String? _categoryId;
+  late ExpenseStatus? _status;
+  late DateTime? _fromDate;
+  late DateTime? _toDate;
+
+  bool get _hasActiveFilters =>
+      _categoryId != null || _status != null || _fromDate != null || _toDate != null;
+
+  ExpenseFilterViewModel get _draftFilters => widget.initialFilters.copyWith(
+        categoryId: _categoryId,
+        clearCategoryId: _categoryId == null,
+        status: _status,
+        clearStatus: _status == null,
+        fromDate: _fromDate,
+        clearFromDate: _fromDate == null,
+        toDate: _toDate,
+        clearToDate: _toDate == null,
+      );
+
+  @override
+  void initState() {
+    super.initState();
+    _categoryId = widget.initialFilters.categoryId;
+    _status = widget.initialFilters.status;
+    _fromDate = widget.initialFilters.fromDate;
+    _toDate = widget.initialFilters.toDate;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: AppSpacing.lg,
+          right: AppSpacing.lg,
+          top: AppSpacing.lg,
+          bottom: AppSpacing.lg + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _FilterPanel(
+              filters: _draftFilters,
+              lookups: widget.lookups,
+              showSearchField: false,
+              onCategoryChanged: (value) => setState(() => _categoryId = value),
+              onStatusChanged: (value) => setState(() => _status = value),
+              onFromDateChanged: (value) => setState(() => _fromDate = value),
+              onToDateChanged: (value) => setState(() => _toDate = value),
+              onClearFilters: _hasActiveFilters
+                  ? () {
+                      setState(() {
+                        _categoryId = null;
+                        _status = null;
+                        _fromDate = null;
+                        _toDate = null;
+                      });
+                    }
+                  : null,
+            ),
+            AppSpacing.gapH12,
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  context.read<ExpensesCubit>().applyFilters(
+                        categoryId: _categoryId,
+                        clearCategoryId: _categoryId == null,
+                        status: _status,
+                        clearStatus: _status == null,
+                        fromDate: _fromDate,
+                        clearFromDate: _fromDate == null,
+                        toDate: _toDate,
+                        clearToDate: _toDate == null,
+                      );
+                  Navigator.of(context).pop();
+                },
+                icon: const Icon(Icons.check),
+                label: Text(LocaleKeys.actionsConfirm.tr()),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _FilterPanel extends StatelessWidget {
-  const _FilterPanel({required this.filters, required this.lookups});
+  const _FilterPanel({
+    required this.filters,
+    required this.lookups,
+    this.showSearchField = true,
+    this.onCategoryChanged,
+    this.onStatusChanged,
+    this.onFromDateChanged,
+    this.onToDateChanged,
+    this.onClearFilters,
+  });
   final ExpenseFilterViewModel filters;
   final ExpenseFormLookupsViewModel lookups;
+  final bool showSearchField;
+  final ValueChanged<String?>? onCategoryChanged;
+  final ValueChanged<ExpenseStatus?>? onStatusChanged;
+  final ValueChanged<DateTime?>? onFromDateChanged;
+  final ValueChanged<DateTime?>? onToDateChanged;
+  final VoidCallback? onClearFilters;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -282,33 +406,46 @@ class _FilterPanel extends StatelessWidget {
         runSpacing: AppSpacing.md,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          SizedBox(width: 280, child: _SearchField(filters: filters)),
+          if (showSearchField)
+            SizedBox(width: 280, child: _SearchField(filters: filters)),
           SizedBox(
             width: 180,
             child: _CategoryFilter(
               filters: filters,
               categories: lookups.categories,
+              onChanged: onCategoryChanged,
             ),
           ),
-          SizedBox(width: 160, child: _StatusFilter(filters: filters)),
+          SizedBox(
+            width: 160,
+            child: _StatusFilter(
+              filters: filters,
+              onChanged: onStatusChanged,
+            ),
+          ),
           _FilterDateButton(
             label: LocaleKeys.fieldsFromDate.tr(),
             value: filters.fromDate,
-            onChanged: (date) => context.read<ExpensesCubit>().applyFilters(
-              fromDate: date,
-              clearFromDate: date == null,
-            ),
+            onChanged: onFromDateChanged ??
+                (date) => context.read<ExpensesCubit>().applyFilters(
+                      fromDate: date,
+                      clearFromDate: date == null,
+                    ),
           ),
           _FilterDateButton(
             label: LocaleKeys.fieldsToDate.tr(),
             value: filters.toDate,
-            onChanged: (date) => context.read<ExpensesCubit>().applyFilters(
-              toDate: date,
-              clearToDate: date == null,
-            ),
+            onChanged: onToDateChanged ??
+                (date) => context.read<ExpensesCubit>().applyFilters(
+                      toDate: date,
+                      clearToDate: date == null,
+                    ),
           ),
           OutlinedButton.icon(
-            onPressed: context.read<ExpensesCubit>().clearFilters,
+            onPressed: onClearFilters ??
+                (filters.hasActiveFilters
+                    ? context.read<ExpensesCubit>().clearFilters
+                    : null),
             icon: const Icon(Icons.clear),
             label: Text(LocaleKeys.expensesClearFilters.tr()),
           ),
@@ -337,7 +474,9 @@ class _FilterDateButton extends StatelessWidget {
           firstDate: DateTime(2000),
           lastDate: DateTime(2100),
         );
-        onChanged(date);
+        if (date != null) {
+          onChanged(date);
+        }
       },
       icon: const Icon(Icons.calendar_today_outlined),
       label: Text(value == null ? label : DateFormat.yMMMd().format(value!)),
@@ -362,9 +501,14 @@ class _SearchField extends StatelessWidget {
 }
 
 class _CategoryFilter extends StatelessWidget {
-  const _CategoryFilter({required this.filters, required this.categories});
+  const _CategoryFilter({
+    required this.filters,
+    required this.categories,
+    this.onChanged,
+  });
   final ExpenseFilterViewModel filters;
   final List<ExpenseCategoryEntity> categories;
+  final ValueChanged<String?>? onChanged;
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
@@ -377,17 +521,19 @@ class _CategoryFilter extends StatelessWidget {
             (item) => DropdownMenuItem(value: item.id, child: Text(item.name)),
           )
           .toList(),
-      onChanged: (value) => context.read<ExpensesCubit>().applyFilters(
-        categoryId: value,
-        clearCategoryId: value == null,
-      ),
+      onChanged: onChanged ??
+          (value) => context.read<ExpensesCubit>().applyFilters(
+                categoryId: value,
+                clearCategoryId: value == null,
+              ),
     );
   }
 }
 
 class _StatusFilter extends StatelessWidget {
-  const _StatusFilter({required this.filters});
+  const _StatusFilter({required this.filters, this.onChanged});
   final ExpenseFilterViewModel filters;
+  final ValueChanged<ExpenseStatus?>? onChanged;
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<ExpenseStatus>(
@@ -401,10 +547,11 @@ class _StatusFilter extends StatelessWidget {
                 DropdownMenuItem(value: item, child: Text(_statusLabel(item))),
           )
           .toList(),
-      onChanged: (value) => context.read<ExpensesCubit>().applyFilters(
-        status: value,
-        clearStatus: value == null,
-      ),
+      onChanged: onChanged ??
+          (value) => context.read<ExpensesCubit>().applyFilters(
+                status: value,
+                clearStatus: value == null,
+              ),
     );
   }
 }

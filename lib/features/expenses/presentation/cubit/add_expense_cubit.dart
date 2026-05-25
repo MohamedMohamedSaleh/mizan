@@ -36,6 +36,8 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
   Future<void> loadLookups({
     ExpenseFormLookupsViewModel? preloadedLookups,
     bool forceRefresh = false,
+    bool showLoading = true,
+    bool keepLoadingState = false,
   }) async {
     if (preloadedLookups != null &&
         preloadedLookups != ExpenseFormLookupsViewModel.empty &&
@@ -55,7 +57,11 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
       return;
     }
 
-    emit(state.copyWith(isLookupsLoading: true, clearErrorMessage: true));
+    if (showLoading) {
+      emit(state.copyWith(isLookupsLoading: true, clearErrorMessage: true));
+    } else {
+      emit(state.copyWith(clearErrorMessage: true));
+    }
     final result = await _loadLookupsUseCase(const NoParams());
     result.fold(
       (failure) => emit(
@@ -66,7 +72,7 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
       ),
       (lookups) => emit(
         state.copyWith(
-          isLookupsLoading: false,
+          isLookupsLoading: keepLoadingState ? state.isLookupsLoading : false,
           lookups: ExpenseFormLookupsViewModel.fromEntity(lookups),
         ),
       ),

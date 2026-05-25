@@ -27,6 +27,10 @@ class ExpensesScreen extends StatefulWidget {
 }
 
 class _ExpensesScreenState extends State<ExpensesScreen> {
+  List<ExpenseListItemViewModel> _cachedExpenses = const [];
+  ExpenseFilterViewModel _cachedFilters = const ExpenseFilterViewModel();
+  ExpenseFormLookupsViewModel _cachedLookups = ExpenseFormLookupsViewModel.empty;
+
   @override
   void initState() {
     super.initState();
@@ -60,10 +64,24 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             : null,
         body: BlocBuilder<ExpensesCubit, ExpensesState>(
           builder: (context, state) {
-            if (state is ExpensesLoading || state is ExpensesInitial) {
+            if (state is ExpensesInitial) {
               return const Center(child: CircularProgressIndicator());
             }
+            if (state is ExpensesLoading) {
+              if (_cachedLookups == ExpenseFormLookupsViewModel.empty) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              return _ExpensesBody(
+                expenses: _cachedExpenses,
+                filters: _cachedFilters,
+                lookups: _cachedLookups,
+                isSectionLoading: true,
+              );
+            }
             if (state is ExpensesLoaded) {
+              _cachedExpenses = state.expenses;
+              _cachedFilters = state.filters;
+              _cachedLookups = state.lookups;
               return _ExpensesBody(
                 expenses: state.expenses,
                 filters: state.filters,
@@ -71,6 +89,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               );
             }
             if (state is ExpensesEmpty) {
+              _cachedExpenses = const [];
+              _cachedFilters = state.filters;
+              _cachedLookups = state.lookups;
               return _ExpensesBody(
                 expenses: const [],
                 filters: state.filters,
@@ -90,11 +111,13 @@ class _ExpensesBody extends StatelessWidget {
     required this.expenses,
     required this.filters,
     required this.lookups,
+    this.isSectionLoading = false,
   });
 
   final List<ExpenseListItemViewModel> expenses;
   final ExpenseFilterViewModel filters;
   final ExpenseFormLookupsViewModel lookups;
+  final bool isSectionLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +141,11 @@ class _ExpensesBody extends StatelessWidget {
           else
             _FilterPanel(filters: filters, lookups: lookups),
           AppSpacing.gapH16,
+          if (isSectionLoading)
+            const Padding(
+              padding: EdgeInsets.only(bottom: AppSpacing.sm),
+              child: LinearProgressIndicator(minHeight: 3),
+            ),
           if (expenses.isEmpty)
             _EmptyState()
           else if (context.isMobile)
@@ -410,7 +438,7 @@ class _ExpensesTable extends StatelessWidget {
                       Row(
                         children: [
                           IconButton(
-                            onPressed: () => context.go('/expenses/${expense.id}'),
+                            onPressed: () => _openExpenseDetails(context, expense.id),
                             icon: const Icon(Icons.visibility_outlined),
                           ),
                           IconButton(
@@ -444,7 +472,7 @@ class _ExpenseCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: InkWell(
-        onTap: () => context.go('/expenses/${expense.id}'),
+        onTap: () => _openExpenseDetails(context, expense.id),
         borderRadius: AppRadius.borderRadiusBase,
         child: Container(
           padding: AppSpacing.paddingAllLg,
@@ -572,6 +600,13 @@ Future<void> _openAddExpense(
 
 Future<void> _openEditExpense(BuildContext context, String expenseId) async {
   final shouldRefresh = await context.push<bool>('/expenses/$expenseId/edit');
+  if (shouldRefresh == true && context.mounted) {
+    await context.read<ExpensesCubit>().refresh();
+  }
+}
+
+Future<void> _openExpenseDetails(BuildContext context, String expenseId) async {
+  final shouldRefresh = await context.push<bool>('/expenses/$expenseId');
   if (shouldRefresh == true && context.mounted) {
     await context.read<ExpensesCubit>().refresh();
   }

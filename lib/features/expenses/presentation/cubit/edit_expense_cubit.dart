@@ -25,7 +25,7 @@ class EditExpenseCubit extends AddExpenseCubit {
 
   Future<void> loadExpense(String id) async {
     emit(state.copyWith(isLookupsLoading: true, clearErrorMessage: true));
-    await loadLookups();
+    await loadLookups(showLoading: false, keepLoadingState: true);
 
     final result = await _getExpenseDetailsUseCase(
       GetExpenseDetailsParams(id: id),

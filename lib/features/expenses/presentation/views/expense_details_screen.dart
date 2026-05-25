@@ -39,12 +39,26 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
         if (state is ExpenseDetailsError) AppToast.error(context, state.message);
         if (state is ExpenseDetailsDeleted) {
           AppToast.success(context, LocaleKeys.expensesDeletedSuccessfully.tr());
-          context.go(RoutePaths.expenses);
+          if (context.canPop()) {
+            context.pop(true);
+          } else {
+            context.go(RoutePaths.expenses);
+          }
         }
       },
       child: Scaffold(
         appBar: AppBar(
           title: Text(LocaleKeys.expensesDetailsTitle.tr()),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(RoutePaths.expenses);
+              }
+            },
+          ),
         ),
         body: BlocBuilder<ExpenseDetailsCubit, ExpenseDetailsState>(
           builder: (context, state) {
@@ -52,7 +66,11 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
               return const Center(child: CircularProgressIndicator());
             }
             if (state is ExpenseDetailsLoaded) {
-              return _DetailsBody(expense: state.expense, lookups: state.lookups);
+              return _DetailsBody(
+                expense: state.expense,
+                lookups: state.lookups,
+                onEdit: _openEditExpense,
+              );
             }
             return Center(child: Text(LocaleKeys.messagesError.tr()));
           },
@@ -60,13 +78,26 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
       ),
     );
   }
+
+  Future<void> _openEditExpense(String expenseId) async {
+    final wasUpdated = await context.push<bool>('/expenses/$expenseId/edit');
+    if (!mounted) return;
+    if (wasUpdated == true) {
+      await context.read<ExpenseDetailsCubit>().loadExpense(widget.expenseId);
+    }
+  }
 }
 
 class _DetailsBody extends StatelessWidget {
-  const _DetailsBody({required this.expense, required this.lookups});
+  const _DetailsBody({
+    required this.expense,
+    required this.lookups,
+    required this.onEdit,
+  });
 
   final ExpenseDetailsViewModel expense;
   final ExpenseFormLookupsViewModel lookups;
+  final ValueChanged<String> onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -159,14 +190,28 @@ class _DetailsBody extends StatelessWidget {
                   runSpacing: AppSpacing.md,
                   children: [
                     ElevatedButton.icon(
-                      onPressed: () => context.go('/expenses/${expense.id}/edit'),
+                      onPressed: () => onEdit(expense.id),
                       icon: const Icon(Icons.edit_outlined),
                       label: Text(LocaleKeys.actionsEdit.tr()),
                     ),
                     OutlinedButton.icon(
                       onPressed: () => context.read<ExpenseDetailsCubit>().voidExpense(),
-                      icon: const Icon(Icons.block),
-                      label: Text(LocaleKeys.expensesVoid.tr()),
+                      icon: const Icon(Icons.delete_outline),
+                      label: Text(LocaleKeys.expensesDelete.tr()),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: context.colors.error,
+                        side: BorderSide(color: context.colors.error),
+                      ).copyWith(
+                        overlayColor: WidgetStateProperty.resolveWith((states) {
+                          if (states.contains(WidgetState.hovered)) {
+                            return context.colors.error.withValues(alpha: 0.10);
+                          }
+                          if (states.contains(WidgetState.pressed)) {
+                            return context.colors.error.withValues(alpha: 0.18);
+                          }
+                          return null;
+                        }),
+                      ),
                     ),
                     OutlinedButton.icon(
                       onPressed: () => AppToast.info(

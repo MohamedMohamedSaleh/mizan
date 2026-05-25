@@ -108,7 +108,9 @@ class _RegisterViewState extends State<RegisterView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.colors.background,
-      appBar: AppBar(actions: const [AuthPreferencesAppBarActions()]),
+      appBar: AppBar(
+        actions: const [AuthPreferencesAppBarActions(), SizedBox(width: 4)],
+      ),
       body: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is RegisterFailure) {

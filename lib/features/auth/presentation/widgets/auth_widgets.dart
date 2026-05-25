@@ -139,7 +139,7 @@ class AuthFormCard extends StatelessWidget {
         width: maxWidth,
         margin: context.responsive(
           mobile: AppSpacing.paddingHBase,
-          tablet: EdgeInsets.zero,
+          tablet: AppSpacing.paddingHBase,
         ),
         padding: context.responsive(
           mobile: AppSpacing.paddingAllLg,

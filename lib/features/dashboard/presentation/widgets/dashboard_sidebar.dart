@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/localization/locale_keys.dart';
 import '../../../../core/theme/app_radius.dart';
@@ -75,7 +74,8 @@ class DashboardSidebar extends StatelessWidget {
 
   bool _isSelected(String routePath) {
     if (routePath == '/dashboard') return currentLocation == routePath;
-    return currentLocation == routePath || currentLocation.startsWith('$routePath/');
+    return currentLocation == routePath ||
+        currentLocation.startsWith('$routePath/');
   }
 }
 
@@ -166,7 +166,9 @@ class _SidebarTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = isSelected ? context.colors.primary : context.colors.textPrimary;
+    final foreground = isSelected
+        ? context.colors.primary
+        : context.colors.textPrimary;
     return Material(
       color: isSelected
           ? context.colors.primary.withValues(alpha: 0.12)
@@ -195,7 +197,9 @@ class _SidebarTile extends StatelessWidget {
                       item.title,
                       style: context.textTheme.titleSmall?.copyWith(
                         color: foreground,
-                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                        fontWeight: isSelected
+                            ? FontWeight.w800
+                            : FontWeight.w600,
                       ),
                     ),
                     Text(
@@ -210,8 +214,10 @@ class _SidebarTile extends StatelessWidget {
                 ),
               ),
               Icon(
-                Icons.chevron_left,
-                color: isSelected ? context.colors.primary : context.colors.textSecondary,
+                Icons.chevron_right_rounded,
+                color: isSelected
+                    ? context.colors.primary
+                    : context.colors.textSecondary,
               ),
             ],
           ),

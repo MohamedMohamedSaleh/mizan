@@ -20,10 +20,7 @@ import '../widgets/expense_status_badge.dart';
 import '../widgets/expense_summary_card.dart';
 
 class ExpensesScreen extends StatefulWidget {
-  const ExpensesScreen({
-    super.key,
-    this.showAppBar = true,
-  });
+  const ExpensesScreen({super.key, this.showAppBar = true});
 
   final bool showAppBar;
 
@@ -34,7 +31,8 @@ class ExpensesScreen extends StatefulWidget {
 class _ExpensesScreenState extends State<ExpensesScreen> {
   List<ExpenseListItemViewModel> _cachedExpenses = const [];
   ExpenseFilterViewModel _cachedFilters = const ExpenseFilterViewModel();
-  ExpenseFormLookupsViewModel _cachedLookups = ExpenseFormLookupsViewModel.empty;
+  ExpenseFormLookupsViewModel _cachedLookups =
+      ExpenseFormLookupsViewModel.empty;
 
   @override
   void initState() {
@@ -140,9 +138,9 @@ class _ExpensesBody extends StatelessWidget {
         padding: padding,
         children: [
           if (!context.isMobile) _Header(lookups: lookups),
-          AppSpacing.gapH16,
+          AppSpacing.gapH32,
           _SummaryStrip(expenses: expenses),
-          AppSpacing.gapH16,
+          AppSpacing.gapH24,
           if (context.isMobile)
             _MobileSearch(filters: filters, lookups: lookups)
           else
@@ -156,7 +154,9 @@ class _ExpensesBody extends StatelessWidget {
           if (expenses.isEmpty)
             _EmptyState()
           else if (context.isMobile)
-            ...expenses.map((expense) => _ExpenseCard(expense: expense, lookups: lookups))
+            ...expenses.map(
+              (expense) => _ExpenseCard(expense: expense, lookups: lookups),
+            )
           else
             _ExpensesTable(expenses: expenses, lookups: lookups),
         ],
@@ -199,51 +199,42 @@ class _SummaryStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final cards = [
       ExpenseSummaryCard(
-        title: LocaleKeys.expensesSummaryLast7Days.tr(),
+        title: LocaleKeys.expensesSummaryLast7Days.tr(context: context),
         amount: _sumSince(const Duration(days: 7)),
         currency: 'EGP',
         icon: Icons.today_outlined,
       ),
       ExpenseSummaryCard(
-        title: LocaleKeys.expensesSummaryLast30Days.tr(),
+        title: LocaleKeys.expensesSummaryLast30Days.tr(context: context),
         amount: _sumSince(const Duration(days: 30)),
         currency: 'EGP',
         icon: Icons.date_range_outlined,
       ),
       ExpenseSummaryCard(
-        title: LocaleKeys.expensesSummaryLast365Days.tr(),
+        title: LocaleKeys.expensesSummaryLast365Days.tr(context: context),
         amount: _sumSince(const Duration(days: 365)),
         currency: 'EGP',
         icon: Icons.calendar_month_outlined,
+        endPadding: 0,
       ),
     ];
     if (context.isMobile) {
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: Row(children: cards.map((card) => Padding(
-          padding: const EdgeInsetsDirectional.only(end: AppSpacing.md),
-          child: card,
-        )).toList()),
+        child: Row(children: cards.map((card) => card).toList()),
       );
     }
-    return Row(
-      children: cards
-          .map((card) => Expanded(
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.only(end: AppSpacing.md),
-                  child: card,
-                ),
-              ))
-          .toList(),
-    );
+    return Row(children: cards.map((card) => Expanded(child: card)).toList());
   }
 
   double _sumSince(Duration duration) {
     final threshold = DateTime.now().subtract(duration);
-    return expenses.where((expense) {
-      final date = expense.expenseDate;
-      return date != null && date.isAfter(threshold);
-    }).fold(0.0, (sum, expense) => sum + expense.amount);
+    return expenses
+        .where((expense) {
+          final date = expense.expenseDate;
+          return date != null && date.isAfter(threshold);
+        })
+        .fold(0.0, (sum, expense) => sum + expense.amount);
   }
 }
 
@@ -294,24 +285,27 @@ class _FilterPanel extends StatelessWidget {
           SizedBox(width: 280, child: _SearchField(filters: filters)),
           SizedBox(
             width: 180,
-            child: _CategoryFilter(filters: filters, categories: lookups.categories),
+            child: _CategoryFilter(
+              filters: filters,
+              categories: lookups.categories,
+            ),
           ),
           SizedBox(width: 160, child: _StatusFilter(filters: filters)),
           _FilterDateButton(
             label: LocaleKeys.fieldsFromDate.tr(),
             value: filters.fromDate,
             onChanged: (date) => context.read<ExpensesCubit>().applyFilters(
-                  fromDate: date,
-                  clearFromDate: date == null,
-                ),
+              fromDate: date,
+              clearFromDate: date == null,
+            ),
           ),
           _FilterDateButton(
             label: LocaleKeys.fieldsToDate.tr(),
             value: filters.toDate,
             onChanged: (date) => context.read<ExpensesCubit>().applyFilters(
-                  toDate: date,
-                  clearToDate: date == null,
-                ),
+              toDate: date,
+              clearToDate: date == null,
+            ),
           ),
           OutlinedButton.icon(
             onPressed: context.read<ExpensesCubit>().clearFilters,
@@ -379,12 +373,14 @@ class _CategoryFilter extends StatelessWidget {
       isExpanded: true,
       decoration: InputDecoration(labelText: LocaleKeys.expensesCategory.tr()),
       items: categories
-          .map((item) => DropdownMenuItem(value: item.id, child: Text(item.name)))
+          .map(
+            (item) => DropdownMenuItem(value: item.id, child: Text(item.name)),
+          )
           .toList(),
       onChanged: (value) => context.read<ExpensesCubit>().applyFilters(
-            categoryId: value,
-            clearCategoryId: value == null,
-          ),
+        categoryId: value,
+        clearCategoryId: value == null,
+      ),
     );
   }
 }
@@ -400,12 +396,15 @@ class _StatusFilter extends StatelessWidget {
       isExpanded: true,
       decoration: InputDecoration(labelText: LocaleKeys.expensesStatus.tr()),
       items: ExpenseStatus.values
-          .map((item) => DropdownMenuItem(value: item, child: Text(_statusLabel(item))))
+          .map(
+            (item) =>
+                DropdownMenuItem(value: item, child: Text(_statusLabel(item))),
+          )
           .toList(),
       onChanged: (value) => context.read<ExpensesCubit>().applyFilters(
-            status: value,
-            clearStatus: value == null,
-          ),
+        status: value,
+        clearStatus: value == null,
+      ),
     );
   }
 }
@@ -448,15 +447,18 @@ class _ExpensesTable extends StatelessWidget {
                       Row(
                         children: [
                           IconButton(
-                            onPressed: () => _openExpenseDetails(context, expense.id),
+                            onPressed: () =>
+                                _openExpenseDetails(context, expense.id),
                             icon: const Icon(Icons.visibility_outlined),
                           ),
                           IconButton(
-                            onPressed: () => _openEditExpense(context, expense.id),
+                            onPressed: () =>
+                                _openEditExpense(context, expense.id),
                             icon: const Icon(Icons.edit_outlined),
                           ),
                           IconButton(
-                            onPressed: () => _confirmDelete(context, expense.id),
+                            onPressed: () =>
+                                _confirmDelete(context, expense.id),
                             icon: const Icon(Icons.delete_outline),
                             color: context.colors.error,
                           ),
@@ -496,17 +498,32 @@ class _ExpenseCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Expanded(child: Text(expense.code, style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800))),
+                  Expanded(
+                    child: Text(
+                      expense.code,
+                      style: context.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
                   ExpenseStatusBadge(status: expense.status),
                 ],
               ),
               AppSpacing.gapH8,
-              Text(expense.description ?? _categoryName(expense.categoryId, lookups)),
+              Text(
+                expense.description ??
+                    _categoryName(expense.categoryId, lookups),
+              ),
               AppSpacing.gapH12,
               Row(
                 children: [
                   Expanded(child: Text(_formatDate(expense.expenseDate))),
-                  Text(_amount(expense), style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+                  Text(
+                    _amount(expense),
+                    style: context.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                 ],
               ),
               AppSpacing.gapH12,
@@ -542,7 +559,11 @@ class _EmptyState extends StatelessWidget {
       alignment: Alignment.center,
       child: Column(
         children: [
-          Icon(Icons.receipt_long_outlined, size: 48, color: context.colors.textSecondary),
+          Icon(
+            Icons.receipt_long_outlined,
+            size: 48,
+            color: context.colors.textSecondary,
+          ),
           AppSpacing.gapH12,
           Text(LocaleKeys.expensesNoExpenses.tr()),
         ],
@@ -565,10 +586,10 @@ String _categoryName(String? categoryId, ExpenseFormLookupsViewModel lookups) {
 }
 
 String _statusLabel(ExpenseStatus status) => switch (status) {
-      ExpenseStatus.draft => LocaleKeys.expensesStatusDraft.tr(),
-      ExpenseStatus.saved => LocaleKeys.expensesStatusSaved.tr(),
-      ExpenseStatus.voided => LocaleKeys.expensesStatusVoided.tr(),
-    };
+  ExpenseStatus.draft => LocaleKeys.expensesStatusDraft.tr(),
+  ExpenseStatus.saved => LocaleKeys.expensesStatusSaved.tr(),
+  ExpenseStatus.voided => LocaleKeys.expensesStatusVoided.tr(),
+};
 
 Future<void> _confirmDelete(BuildContext context, String id) async {
   final expensesCubit = context.read<ExpensesCubit>();
@@ -618,7 +639,9 @@ Future<void> _openEditExpense(BuildContext context, String expenseId) async {
 }
 
 Future<void> _openExpenseDetails(BuildContext context, String expenseId) async {
-  final shouldRefresh = await context.push<bool>('/dashboard/expenses/$expenseId');
+  final shouldRefresh = await context.push<bool>(
+    '/dashboard/expenses/$expenseId',
+  );
   if (shouldRefresh == true && context.mounted) {
     await context.read<ExpensesCubit>().refresh();
   }

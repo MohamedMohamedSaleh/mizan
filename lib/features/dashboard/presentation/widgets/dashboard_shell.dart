@@ -1,5 +1,3 @@
-import 'dart:ui' as ui;
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,20 +9,18 @@ import '../../../../core/router/route_names.dart';
 import '../../../../core/services/toast_service.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../auth/presentation/widgets/auth_preferences_appbar_actions.dart';
 import 'dashboard_nav_item.dart';
 import 'dashboard_sidebar.dart';
 
 class DashboardShell extends StatelessWidget {
-  const DashboardShell({
-    super.key,
-    required this.child,
-  });
+  const DashboardShell({super.key, required this.child});
 
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final items = _navItems();
+    final items = _navItems(context);
     final currentLocation = GoRouterState.of(context).uri.path;
     final isWide = context.width >= 900;
 
@@ -44,18 +40,21 @@ class DashboardShell extends StatelessWidget {
                 ? null
                 : AppBar(
                     title: Text(_titleForLocation(items, currentLocation)),
-                    actions: [
-                      Builder(
-                        builder: (buttonContext) => IconButton(
-                          tooltip: LocaleKeys.navSettings.tr(),
-                          onPressed: () =>
-                              Scaffold.of(buttonContext).openEndDrawer(),
-                          icon: const Icon(Icons.menu),
-                        ),
+                    leading: Builder(
+                      builder: (buttonContext) => IconButton(
+                        tooltip: LocaleKeys.navSettings.tr(),
+                        onPressed: () {
+                          Scaffold.of(buttonContext).openDrawer();
+                        },
+                        icon: const Icon(Icons.menu),
                       ),
+                    ),
+                    actions: const [
+                      AuthPreferencesAppBarActions(),
+                      SizedBox(width: 12),
                     ],
                   ),
-            endDrawer: isWide
+            drawer: isWide
                 ? null
                 : DashboardDrawerMenu(
                     items: items,
@@ -63,22 +62,49 @@ class DashboardShell extends StatelessWidget {
                     isLogoutLoading: isLogoutLoading,
                     onItemSelected: (item) {
                       Navigator.of(context).pop();
-                      context.go(item.routePath);
+                      _onItemSelected(context, item);
                     },
                     onLogout: () => context.read<AuthCubit>().logout(),
                   ),
+            // endDrawer: isWide || !isRtl
+            //     ? null
+            //     : DashboardDrawerMenu(
+            //         items: items,
+            //         currentLocation: currentLocation,
+            //         isLogoutLoading: isLogoutLoading,
+            //         onItemSelected: (item) {
+            //           Navigator.of(context).pop();
+            //           _onItemSelected(context, item);
+            //         },
+            //         onLogout: () => context.read<AuthCubit>().logout(),
+            //       ),
             body: Row(
-              textDirection: ui.TextDirection.ltr,
               children: [
-                Expanded(child: child),
                 if (isWide)
                   DashboardSidebar(
                     items: items,
                     currentLocation: currentLocation,
                     isLogoutLoading: isLogoutLoading,
-                    onItemSelected: (item) => context.go(item.routePath),
+                    onItemSelected: (item) => _onItemSelected(context, item),
                     onLogout: () => context.read<AuthCubit>().logout(),
                   ),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1600),
+                      child: SizedBox(width: double.infinity, child: child),
+                    ),
+                  ),
+                ),
+                // if (isWide && isRtl)
+                //   DashboardSidebar(
+                //     items: items,
+                //     currentLocation: currentLocation,
+                //     isLogoutLoading: isLogoutLoading,
+                //     onItemSelected: (item) => _onItemSelected(context, item),
+                //     onLogout: () => context.read<AuthCubit>().logout(),
+                //   ),
               ],
             ),
           );
@@ -87,10 +113,10 @@ class DashboardShell extends StatelessWidget {
     );
   }
 
-  List<DashboardNavItem> _navItems() {
+  List<DashboardNavItem> _navItems(BuildContext context) {
     return [
       DashboardNavItem(
-        title: LocaleKeys.navDashboard.tr(),
+        title: LocaleKeys.navDashboard.tr(context: context),
         subtitle: LocaleKeys.dashboardOverview.tr(),
         icon: Icons.dashboard_customize_outlined,
         routePath: RoutePaths.dashboard,
@@ -130,10 +156,19 @@ class DashboardShell extends StatelessWidget {
 
   String _titleForLocation(List<DashboardNavItem> items, String location) {
     for (final item in items) {
-      if (location == item.routePath || location.startsWith('${item.routePath}/')) {
+      if (location == item.routePath ||
+          location.startsWith('${item.routePath}/')) {
         return item.title;
       }
     }
     return LocaleKeys.appName.tr();
+  }
+
+  void _onItemSelected(BuildContext context, DashboardNavItem item) {
+    if (item.routePath == RoutePaths.settings) {
+      AppSettingsDialog.show(context);
+      return;
+    }
+    context.go(item.routePath);
   }
 }

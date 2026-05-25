@@ -17,11 +17,13 @@ class AuthPreferencesAppBarActions extends StatelessWidget {
     return IconButton(
       tooltip: LocaleKeys.settingsTitle.tr(),
       icon: const Icon(Icons.settings_outlined),
-      onPressed: () => _showSettingsDialog(context),
+      onPressed: () => AppSettingsDialog.show(context),
     );
   }
+}
 
-  Future<void> _showSettingsDialog(BuildContext context) {
+abstract final class AppSettingsDialog {
+  static Future<void> show(BuildContext context) {
     return showDialog<void>(
       context: context,
       builder: (dialogContext) {

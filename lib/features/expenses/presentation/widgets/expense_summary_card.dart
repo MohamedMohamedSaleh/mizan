@@ -12,17 +12,20 @@ class ExpenseSummaryCard extends StatelessWidget {
     required this.amount,
     required this.currency,
     required this.icon,
+    this.endPadding = 14,
   });
 
   final String title;
   final double amount;
   final String currency;
   final IconData icon;
+  final double endPadding;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: context.responsive(mobile: 220, tablet: null),
+      margin: EdgeInsetsDirectional.only(end: endPadding),
       padding: AppSpacing.paddingAllLg,
       decoration: BoxDecoration(
         color: context.colors.card,

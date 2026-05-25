@@ -1,8 +1,14 @@
-/// Supabase project configuration.
-///
-/// Replace these with your actual Supabase project values.
-/// In production, use environment variables or --dart-define.
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 abstract final class SupabaseConstants {
-  static const String url = 'https://ykkhbrtauglkophdgygo.supabase.co';
-  static const String anonKey = 'sb_publishable_80xpF8uOqhGssCQshzaBVg_HLCFMq7P';
+  static String get url => dotenv.env['SUPABASE_URL'] ?? '';
+  static String get anonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+
+  static void validate() {
+    if (url.isEmpty || anonKey.isEmpty) {
+      throw StateError(
+        'Missing Supabase config in .env. Add SUPABASE_URL and SUPABASE_ANON_KEY.',
+      );
+    }
+  }
 }

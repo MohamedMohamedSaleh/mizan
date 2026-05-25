@@ -8,7 +8,12 @@ import 'authenticated_supabase_data_source.dart';
 
 abstract class JournalEntriesRemoteDataSource {
   Future<JournalEntryModel> createJournalEntry(JournalEntryModel entry);
+  Future<JournalEntryModel> updateJournalEntry(JournalEntryModel entry);
   Future<void> createJournalEntryLines(List<JournalEntryLineModel> lines);
+  Future<void> replaceJournalEntryLines(
+    String journalEntryId,
+    List<JournalEntryLineModel> lines,
+  );
   Future<void> voidJournalEntry(String id);
 }
 
@@ -51,6 +56,36 @@ class JournalEntriesRemoteDataSourceImpl
     }).toList();
 
     await client.from(_linesTable).insert(payload);
+  }
+
+  @override
+  Future<JournalEntryModel> updateJournalEntry(JournalEntryModel entry) async {
+    final userId = currentUserId;
+    final payload = dataForUpdate(entry.toJson(), userId);
+    final response = await client
+        .from(_entriesTable)
+        .update(payload)
+        .eq('id', entry.id)
+        .eq('user_id', userId)
+        .isFilter('deleted_at', null)
+        .select()
+        .single();
+
+    return JournalEntryModel.fromJson(rowAsMap(response));
+  }
+
+  @override
+  Future<void> replaceJournalEntryLines(
+    String journalEntryId,
+    List<JournalEntryLineModel> lines,
+  ) async {
+    final userId = currentUserId;
+    await client
+        .from(_linesTable)
+        .delete()
+        .eq('journal_entry_id', journalEntryId)
+        .eq('user_id', userId);
+    await createJournalEntryLines(lines);
   }
 
   @override

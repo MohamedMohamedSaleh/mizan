@@ -45,6 +45,24 @@ class ExpenseFormLookupsViewModel extends Equatable {
   final List<VendorEntity> vendors;
   final List<TaxEntity> taxes;
 
+  ExpenseFormLookupsViewModel copyWith({
+    List<AccountEntity>? accounts,
+    List<AccountEntity>? paymentAccounts,
+    List<AccountEntity>? expenseAccounts,
+    List<ExpenseCategoryEntity>? categories,
+    List<VendorEntity>? vendors,
+    List<TaxEntity>? taxes,
+  }) {
+    return ExpenseFormLookupsViewModel(
+      accounts: accounts ?? this.accounts,
+      paymentAccounts: paymentAccounts ?? this.paymentAccounts,
+      expenseAccounts: expenseAccounts ?? this.expenseAccounts,
+      categories: categories ?? this.categories,
+      vendors: vendors ?? this.vendors,
+      taxes: taxes ?? this.taxes,
+    );
+  }
+
   AccountEntity? expenseAccountForCategory(String? categoryId) {
     if (categoryId == null) return null;
     ExpenseCategoryEntity? selectedCategory;

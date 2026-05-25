@@ -25,11 +25,36 @@ class JournalEntriesRepositoryImpl implements JournalEntriesRepository {
   }
 
   @override
+  Future<Result<JournalEntryEntity>> updateJournalEntry(
+    JournalEntryEntity entry,
+  ) {
+    return guardExpenseRepositoryCall<JournalEntryEntity>(() async {
+      return (await _remoteDataSource.updateJournalEntry(
+        JournalEntryModel.fromEntity(entry),
+      ))
+          .toEntity();
+    });
+  }
+
+  @override
   Future<Result<void>> createJournalEntryLines(
     List<JournalEntryLineEntity> lines,
   ) {
     return guardExpenseRepositoryCall<void>(() {
       return _remoteDataSource.createJournalEntryLines(
+        lines.map(JournalEntryLineModel.fromEntity).toList(),
+      );
+    });
+  }
+
+  @override
+  Future<Result<void>> replaceJournalEntryLines(
+    String journalEntryId,
+    List<JournalEntryLineEntity> lines,
+  ) {
+    return guardExpenseRepositoryCall<void>(() {
+      return _remoteDataSource.replaceJournalEntryLines(
+        journalEntryId,
         lines.map(JournalEntryLineModel.fromEntity).toList(),
       );
     });

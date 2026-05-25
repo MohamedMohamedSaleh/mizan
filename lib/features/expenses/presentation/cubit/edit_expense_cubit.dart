@@ -11,6 +11,8 @@ class EditExpenseCubit extends AddExpenseCubit {
   EditExpenseCubit({
     required super.loadLookupsUseCase,
     required super.addExpenseUseCase,
+    required super.vendorsRepository,
+    required super.categoriesRepository,
     required GetExpenseDetailsUseCase getExpenseDetailsUseCase,
     required UpdateExpenseUseCase updateExpenseUseCase,
   })  : _getExpenseDetailsUseCase = getExpenseDetailsUseCase,

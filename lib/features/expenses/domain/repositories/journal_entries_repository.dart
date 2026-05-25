@@ -6,7 +6,14 @@ abstract class JournalEntriesRepository {
   Future<Result<JournalEntryEntity>> createJournalEntry(
     JournalEntryEntity entry,
   );
+  Future<Result<JournalEntryEntity>> updateJournalEntry(
+    JournalEntryEntity entry,
+  );
   Future<Result<void>> createJournalEntryLines(
+    List<JournalEntryLineEntity> lines,
+  );
+  Future<Result<void>> replaceJournalEntryLines(
+    String journalEntryId,
     List<JournalEntryLineEntity> lines,
   );
   Future<Result<void>> voidJournalEntry(String id);

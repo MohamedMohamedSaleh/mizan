@@ -88,6 +88,11 @@ class _MizanAppState extends State<MizanApp> {
               darkTheme: AppTheme.dark,
               themeMode: themeMode,
               routerConfig: _appRouter.router,
+              builder: (context, child) {
+                return ExcludeSemantics(
+                  child: child ?? const SizedBox.shrink(),
+                );
+              },
             ),
           );
         },

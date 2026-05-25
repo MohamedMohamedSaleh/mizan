@@ -190,6 +190,8 @@ Future<void> initDependencies() async {
     () => AddExpenseCubit(
       loadLookupsUseCase: sl<LoadExpenseFormLookupsUseCase>(),
       addExpenseUseCase: sl<AddExpenseUseCase>(),
+      vendorsRepository: sl<VendorsRepository>(),
+      categoriesRepository: sl<ExpenseCategoriesRepository>(),
     ),
   );
   sl.registerFactory(
@@ -203,6 +205,8 @@ Future<void> initDependencies() async {
     () => EditExpenseCubit(
       loadLookupsUseCase: sl<LoadExpenseFormLookupsUseCase>(),
       addExpenseUseCase: sl<AddExpenseUseCase>(),
+      vendorsRepository: sl<VendorsRepository>(),
+      categoriesRepository: sl<ExpenseCategoriesRepository>(),
       getExpenseDetailsUseCase: sl<GetExpenseDetailsUseCase>(),
       updateExpenseUseCase: sl<UpdateExpenseUseCase>(),
     ),

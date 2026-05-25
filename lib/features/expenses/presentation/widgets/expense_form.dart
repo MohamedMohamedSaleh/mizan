@@ -96,7 +96,7 @@ class ExpenseForm extends StatelessWidget {
                     AppSpacing.gapH16,
                     _responsiveRow(
                       context,
-                      _Dropdown<ExpenseCategoryEntity>(
+                      _SearchableDropdown<ExpenseCategoryEntity>(
                         label: LocaleKeys.expensesCategory.tr(),
                         hint: LocaleKeys.expensesSelectCategory.tr(),
                         value: state.selectedCategory,
@@ -105,8 +105,9 @@ class ExpenseForm extends StatelessWidget {
                         errorKey:
                             state.validationErrors[AddExpenseState.fieldCategory],
                         onChanged: cubit.categoryChanged,
+                        onCreateNew: cubit.createCategory,
                       ),
-                      _Dropdown<VendorEntity>(
+                      _SearchableDropdown<VendorEntity>(
                         label: LocaleKeys.expensesVendor.tr(),
                         hint: LocaleKeys.expensesSelectVendor.tr(),
                         value: state.selectedVendor,
@@ -114,6 +115,7 @@ class ExpenseForm extends StatelessWidget {
                         itemLabel: (item) => item.name,
                         showClear: true,
                         onChanged: cubit.vendorChanged,
+                        onCreateNew: cubit.createVendor,
                       ),
                     ),
                     AppSpacing.gapH16,
@@ -401,6 +403,135 @@ class _Dropdown<T> extends StatelessWidget {
           )
           .toList(),
       onChanged: onChanged,
+    );
+  }
+}
+
+class _SearchableDropdown<T> extends StatefulWidget {
+  const _SearchableDropdown({
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.itemLabel,
+    required this.onChanged,
+    this.onCreateNew,
+    this.hint,
+    this.errorKey,
+    this.showClear = false,
+  });
+
+  final String label;
+  final String? hint;
+  final T? value;
+  final List<T> items;
+  final String Function(T item) itemLabel;
+  final ValueChanged<T?> onChanged;
+  final Future<T?> Function(String query)? onCreateNew;
+  final String? errorKey;
+  final bool showClear;
+
+  @override
+  State<_SearchableDropdown<T>> createState() => _SearchableDropdownState<T>();
+}
+
+class _SearchableDropdownState<T> extends State<_SearchableDropdown<T>> {
+  final SearchController _searchController = SearchController();
+  late TextEditingController _textController;
+
+  @override
+  void initState() {
+    super.initState();
+    _textController = TextEditingController(
+      text: widget.value != null ? widget.itemLabel(widget.value as T) : '',
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _SearchableDropdown<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      _textController.text =
+          widget.value != null ? widget.itemLabel(widget.value as T) : '';
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SearchAnchor(
+      searchController: _searchController,
+      builder: (BuildContext context, SearchController controller) {
+        return TextFormField(
+          controller: _textController,
+          readOnly: true,
+          onTap: () {
+            controller.openView();
+          },
+          decoration: InputDecoration(
+            labelText: widget.label,
+            hintText: widget.hint,
+            errorText: widget.errorKey?.tr(),
+            suffixIcon: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.showClear && widget.value != null)
+                  IconButton(
+                    icon: const Icon(Icons.clear, size: 20),
+                    onPressed: () {
+                      widget.onChanged(null);
+                    },
+                  ),
+                const Icon(Icons.arrow_drop_down),
+                const SizedBox(width: 8),
+              ],
+            ),
+          ),
+        );
+      },
+      suggestionsBuilder: (BuildContext context, SearchController controller) {
+        final query = controller.text.trim();
+        final List<T> matches = widget.items.where((item) {
+          final name = widget.itemLabel(item).toLowerCase();
+          return name.contains(query.toLowerCase());
+        }).toList();
+
+        final hasExactMatch = widget.items.any(
+          (item) =>
+              widget.itemLabel(item).toLowerCase() == query.toLowerCase(),
+        );
+
+        return [
+          if (widget.onCreateNew != null && query.isNotEmpty && !hasExactMatch)
+            ListTile(
+              leading: const Icon(Icons.add_circle_outline, color: Colors.blue),
+              title: Text(
+                '${LocaleKeys.actionsAdd.tr()} "$query"',
+              ),
+              onTap: () async {
+                controller.closeView(query);
+                final newItem = await widget.onCreateNew!(query);
+                if (newItem != null && mounted) {
+                  widget.onChanged(newItem);
+                }
+              },
+            ),
+          ...matches.map((item) {
+            return ListTile(
+              title: Text(widget.itemLabel(item)),
+              onTap: () {
+                controller.closeView(widget.itemLabel(item));
+                widget.onChanged(item);
+              },
+            );
+          }),
+        ];
+      },
     );
   }
 }

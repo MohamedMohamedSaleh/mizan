@@ -67,12 +67,32 @@ class UpdateExpenseUseCase
     }
     final bundle = (bundleResult as Success<ExpenseJournalBundle>).data;
 
-    // TODO: Replace this multi-table update flow with a Postgres RPC transaction.
+    // Keep a single entry number per expense. If an entry already exists,
+    // update it in place and replace its lines instead of creating a duplicate.
     if (existing.journalEntryId != null && existing.journalEntryId!.isNotEmpty) {
-      final voidResult = await _journalEntriesRepository.voidJournalEntry(
-        existing.journalEntryId!,
+      final journalEntryId = existing.journalEntryId!;
+      final entryResult = await _journalEntriesRepository.updateJournalEntry(
+        bundle.entry.copyWith(id: journalEntryId),
       );
-      if (voidResult is Error<void>) return Error(voidResult.failure);
+      if (entryResult is Error<JournalEntryEntity>) {
+        return Error(entryResult.failure);
+      }
+
+      final lines = bundle.lines
+          .map((line) => line.copyWith(journalEntryId: journalEntryId))
+          .toList();
+      final linesResult = await _journalEntriesRepository.replaceJournalEntryLines(
+        journalEntryId,
+        lines,
+      );
+      if (linesResult is Error<void>) return Error(linesResult.failure);
+
+      return _expensesRepository.updateExpense(
+        params.expense.copyWith(
+          status: ExpenseStatus.saved,
+          journalEntryId: journalEntryId,
+        ),
+      );
     }
 
     final entryResult = await _journalEntriesRepository.createJournalEntry(

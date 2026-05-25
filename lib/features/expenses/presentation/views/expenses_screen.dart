@@ -414,7 +414,7 @@ class _ExpensesTable extends StatelessWidget {
                             icon: const Icon(Icons.visibility_outlined),
                           ),
                           IconButton(
-                            onPressed: () => context.go('/expenses/${expense.id}/edit'),
+                            onPressed: () => _openEditExpense(context, expense.id),
                             icon: const Icon(Icons.edit_outlined),
                           ),
                           IconButton(
@@ -476,7 +476,7 @@ class _ExpenseCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(
-                    onPressed: () => context.go('/expenses/${expense.id}/edit'),
+                    onPressed: () => _openEditExpense(context, expense.id),
                     icon: const Icon(Icons.edit_outlined),
                     tooltip: LocaleKeys.actionsEdit.tr(),
                   ),
@@ -565,6 +565,13 @@ Future<void> _openAddExpense(
     RoutePaths.addExpense,
     extra: lookups,
   );
+  if (shouldRefresh == true && context.mounted) {
+    await context.read<ExpensesCubit>().refresh();
+  }
+}
+
+Future<void> _openEditExpense(BuildContext context, String expenseId) async {
+  final shouldRefresh = await context.push<bool>('/expenses/$expenseId/edit');
   if (shouldRefresh == true && context.mounted) {
     await context.read<ExpensesCubit>().refresh();
   }

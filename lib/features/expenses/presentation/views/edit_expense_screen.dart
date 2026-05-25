@@ -33,26 +33,29 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
         if (state.errorMessage != null) AppToast.error(context, state.errorMessage!);
         if (state.saveSuccess) {
           AppToast.success(context, LocaleKeys.expensesUpdatedSuccessfully.tr());
-          context.go(RoutePaths.expenses);
+          if (context.canPop()) {
+            context.pop(true);
+          } else {
+            context.go(RoutePaths.expenses);
+          }
         }
       },
       child: Scaffold(
         appBar: AppBar(
           title: Text(LocaleKeys.expensesEditTitle.tr()),
-          actions: [
-            TextButton.icon(
-              onPressed: () => context.go(RoutePaths.expenses),
-              icon: const Icon(Icons.close),
-              label: Text(LocaleKeys.actionsCancel.tr()),
-            ),
-          ],
         ),
         body: BlocBuilder<EditExpenseCubit, AddExpenseState>(
           builder: (context, state) => ExpenseForm(
             state: state,
             cubit: context.read<EditExpenseCubit>(),
             showSavedWarning: true,
-            onCancel: () => context.go(RoutePaths.expenses),
+            onCancel: () {
+              if (context.canPop()) {
+                context.pop(false);
+              } else {
+                context.go(RoutePaths.expenses);
+              }
+            },
           ),
         ),
       ),

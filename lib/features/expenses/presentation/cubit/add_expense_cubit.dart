@@ -8,6 +8,8 @@ import '../../domain/entities/expense_entity.dart';
 import '../../domain/entities/expense_enums.dart';
 import '../../domain/entities/tax_entity.dart';
 import '../../domain/entities/vendor_entity.dart';
+import '../../domain/repositories/expense_categories_repository.dart';
+import '../../domain/repositories/vendors_repository.dart';
 import '../../domain/usecases/add_expense_usecase.dart';
 import '../../domain/usecases/load_expense_form_lookups_usecase.dart';
 import '../view_model/expense_form_lookups_view_model.dart';
@@ -18,12 +20,18 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
   AddExpenseCubit({
     required LoadExpenseFormLookupsUseCase loadLookupsUseCase,
     required AddExpenseUseCase addExpenseUseCase,
+    required VendorsRepository vendorsRepository,
+    required ExpenseCategoriesRepository categoriesRepository,
   })  : _loadLookupsUseCase = loadLookupsUseCase,
         _addExpenseUseCase = addExpenseUseCase,
+        _vendorsRepository = vendorsRepository,
+        _categoriesRepository = categoriesRepository,
         super(AddExpenseState(code: _generateCode(), expenseDate: DateTime.now()));
 
   final LoadExpenseFormLookupsUseCase _loadLookupsUseCase;
   final AddExpenseUseCase _addExpenseUseCase;
+  final VendorsRepository _vendorsRepository;
+  final ExpenseCategoriesRepository _categoriesRepository;
 
   Future<void> loadLookups({
     ExpenseFormLookupsViewModel? preloadedLookups,
@@ -316,6 +324,65 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
       recurrenceEndDate: state.recurrenceEndDate,
       attachmentUrl: state.attachmentUrl,
     );
+  }
+
+  Future<VendorEntity?> createVendor(String name) async {
+    emit(state.copyWith(clearErrorMessage: true));
+    final result = await _vendorsRepository.createVendor(name);
+    return result.fold(
+      (failure) {
+        emit(state.copyWith(errorMessage: failure.message));
+        return null;
+      },
+      (vendor) {
+        final updatedVendors = List<VendorEntity>.from(state.lookups.vendors)..add(vendor);
+        emit(state.copyWith(
+          lookups: state.lookups.copyWith(vendors: updatedVendors),
+          selectedVendor: vendor,
+        ));
+        return vendor;
+      },
+    );
+  }
+
+  Future<ExpenseCategoryEntity?> createCategory(String name) async {
+    AccountEntity? defaultAccount;
+    for (final account in state.lookups.expenseAccounts) {
+      if (account.code == '5090') {
+        defaultAccount = account;
+        break;
+      }
+    }
+    if (defaultAccount == null && state.lookups.expenseAccounts.isNotEmpty) {
+      defaultAccount = state.lookups.expenseAccounts.first;
+    }
+
+    if (defaultAccount == null) {
+      emit(state.copyWith(errorMessage: 'No expense accounts found to link the category.'));
+      return null;
+    }
+
+    emit(state.copyWith(clearErrorMessage: true));
+    final result = await _categoriesRepository.createCategory(name, defaultAccount.id);
+    return result.fold(
+      (failure) {
+        emit(state.copyWith(errorMessage: failure.message));
+        return null;
+      },
+      (category) {
+        final updatedCategories = List<ExpenseCategoryEntity>.from(state.lookups.categories)..add(category);
+        emit(state.copyWith(
+          lookups: state.lookups.copyWith(categories: updatedCategories),
+          selectedCategory: category,
+        ));
+        generateJournalPreview();
+        return category;
+      },
+    );
+  }
+
+  void clearError() {
+    emit(state.copyWith(clearErrorMessage: true));
   }
 
   static String _generateCode() {

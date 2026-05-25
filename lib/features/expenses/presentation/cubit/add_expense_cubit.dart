@@ -103,6 +103,17 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
     );
   }
 
+  void currencyChanged(String? currency) {
+    if (currency == null || currency == state.currency) return;
+    emit(
+      state.copyWith(
+        currency: currency,
+        saveSuccess: false,
+        clearErrorMessage: true,
+      ),
+    );
+  }
+
   void dateChanged(DateTime? date) {
     emit(
       state.copyWith(

@@ -197,23 +197,27 @@ class _SummaryStrip extends StatelessWidget {
   final List<ExpenseListItemViewModel> expenses;
   @override
   Widget build(BuildContext context) {
+    final last7Days = _summarySince(const Duration(days: 7));
+    final last30Days = _summarySince(const Duration(days: 30));
+    final last365Days = _summarySince(const Duration(days: 365));
+
     final cards = [
       ExpenseSummaryCard(
         title: LocaleKeys.expensesSummaryLast7Days.tr(context: context),
-        amount: _sumSince(const Duration(days: 7)),
-        currency: 'EGP',
+        amount: last7Days.amount,
+        currency: last7Days.currency,
         icon: Icons.today_outlined,
       ),
       ExpenseSummaryCard(
         title: LocaleKeys.expensesSummaryLast30Days.tr(context: context),
-        amount: _sumSince(const Duration(days: 30)),
-        currency: 'EGP',
+        amount: last30Days.amount,
+        currency: last30Days.currency,
         icon: Icons.date_range_outlined,
       ),
       ExpenseSummaryCard(
         title: LocaleKeys.expensesSummaryLast365Days.tr(context: context),
-        amount: _sumSince(const Duration(days: 365)),
-        currency: 'EGP',
+        amount: last365Days.amount,
+        currency: last365Days.currency,
         icon: Icons.calendar_month_outlined,
         endPadding: 0,
       ),
@@ -227,15 +231,35 @@ class _SummaryStrip extends StatelessWidget {
     return Row(children: cards.map((card) => Expanded(child: card)).toList());
   }
 
-  double _sumSince(Duration duration) {
+  _SummaryMetric _summarySince(Duration duration) {
     final threshold = DateTime.now().subtract(duration);
-    return expenses
-        .where((expense) {
-          final date = expense.expenseDate;
-          return date != null && date.isAfter(threshold);
-        })
+    final rangedExpenses = expenses.where((expense) {
+      final date = expense.expenseDate;
+      return date != null && date.isAfter(threshold);
+    }).toList();
+
+    final amount = rangedExpenses
         .fold(0.0, (sum, expense) => sum + expense.amount);
+
+    final currencies = rangedExpenses
+        .where((expense) {
+          final currency = expense.currency.trim();
+          return currency.isNotEmpty;
+        })
+        .map((expense) => expense.currency.toUpperCase())
+        .toSet();
+
+    final currency = currencies.isEmpty ? 'SAR' : currencies.join(', ');
+
+    return _SummaryMetric(amount: amount, currency: currency);
   }
+}
+
+class _SummaryMetric {
+  const _SummaryMetric({required this.amount, required this.currency});
+
+  final double amount;
+  final String currency;
 }
 
 class _MobileSearch extends StatelessWidget {

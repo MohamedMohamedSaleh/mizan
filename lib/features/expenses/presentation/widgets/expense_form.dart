@@ -68,7 +68,7 @@ class ExpenseForm extends StatelessWidget {
                         value: state.currency,
                         items: const ['EGP', 'USD', 'EUR', 'SAR'],
                         itemLabel: (value) => value,
-                        onChanged: (_) {},
+                        onChanged: cubit.currencyChanged,
                       ),
                     ),
                     AppSpacing.gapH16,

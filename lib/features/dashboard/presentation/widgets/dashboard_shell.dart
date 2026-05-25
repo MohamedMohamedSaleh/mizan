@@ -66,18 +66,6 @@ class DashboardShell extends StatelessWidget {
                     },
                     onLogout: () => context.read<AuthCubit>().logout(),
                   ),
-            // endDrawer: isWide || !isRtl
-            //     ? null
-            //     : DashboardDrawerMenu(
-            //         items: items,
-            //         currentLocation: currentLocation,
-            //         isLogoutLoading: isLogoutLoading,
-            //         onItemSelected: (item) {
-            //           Navigator.of(context).pop();
-            //           _onItemSelected(context, item);
-            //         },
-            //         onLogout: () => context.read<AuthCubit>().logout(),
-            //       ),
             body: Row(
               children: [
                 if (isWide)
@@ -90,21 +78,13 @@ class DashboardShell extends StatelessWidget {
                   ),
                 Expanded(
                   child: Align(
-                    alignment: Alignment.topRight,
+                    alignment: AlignmentDirectional.topStart,
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1600),
                       child: SizedBox(width: double.infinity, child: child),
                     ),
                   ),
                 ),
-                // if (isWide && isRtl)
-                //   DashboardSidebar(
-                //     items: items,
-                //     currentLocation: currentLocation,
-                //     isLogoutLoading: isLogoutLoading,
-                //     onItemSelected: (item) => _onItemSelected(context, item),
-                //     onLogout: () => context.read<AuthCubit>().logout(),
-                //   ),
               ],
             ),
           );

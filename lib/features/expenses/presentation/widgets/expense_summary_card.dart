@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -59,6 +60,7 @@ class ExpenseSummaryCard extends StatelessWidget {
           AppSpacing.gapH12,
           Text(
             '${NumberFormat.currency(symbol: '', decimalDigits: 2).format(amount)} $currency',
+            textDirection: ui.TextDirection.ltr,
             style: context.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w800,
               color: context.colors.textPrimary,

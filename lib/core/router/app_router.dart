@@ -17,6 +17,7 @@ import '../../features/expenses/presentation/cubit/add_expense_cubit.dart';
 import '../../features/expenses/presentation/cubit/edit_expense_cubit.dart';
 import '../../features/expenses/presentation/cubit/expense_details_cubit.dart';
 import '../../features/expenses/presentation/cubit/expenses_cubit.dart';
+import '../../features/expenses/presentation/view_model/expense_form_lookups_view_model.dart';
 import '../../features/expenses/presentation/views/add_expense_screen.dart';
 import '../../features/expenses/presentation/views/edit_expense_screen.dart';
 import '../../features/expenses/presentation/views/expense_details_screen.dart';
@@ -118,10 +119,13 @@ class AppRouter {
       GoRoute(
         path: RoutePaths.addExpense,
         name: RouteNames.addExpense,
-        builder: (context, state) => BlocProvider(
-          create: (_) => sl<AddExpenseCubit>(),
-          child: const AddExpenseScreen(),
-        ),
+        builder: (context, state) {
+          final preloadedLookups = state.extra as ExpenseFormLookupsViewModel?;
+          return BlocProvider(
+            create: (_) => sl<AddExpenseCubit>(),
+            child: AddExpenseScreen(initialLookups: preloadedLookups),
+          );
+        },
       ),
       GoRoute(
         path: RoutePaths.expenseDetails,

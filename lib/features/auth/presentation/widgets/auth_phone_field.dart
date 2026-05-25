@@ -142,7 +142,7 @@ class _AuthPhoneFieldState extends State<AuthPhoneField> {
               barrierColor: Colors.black38,
               dialogSize: Size(
                 MediaQuery.sizeOf(context).width,
-                MediaQuery.sizeOf(context).height * 0.6,
+                MediaQuery.sizeOf(context).height * 0.8,
               ),
               boxDecoration: BoxDecoration(
                 color: colors.card,

@@ -8,10 +8,16 @@ import '../../../../core/router/route_names.dart';
 import '../../../../core/services/toast_service.dart';
 import '../cubit/add_expense_cubit.dart';
 import '../cubit/add_expense_state.dart';
+import '../view_model/expense_form_lookups_view_model.dart';
 import '../widgets/expense_form.dart';
 
 class AddExpenseScreen extends StatefulWidget {
-  const AddExpenseScreen({super.key});
+  const AddExpenseScreen({
+    super.key,
+    this.initialLookups,
+  });
+
+  final ExpenseFormLookupsViewModel? initialLookups;
 
   @override
   State<AddExpenseScreen> createState() => _AddExpenseScreenState();
@@ -21,7 +27,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<AddExpenseCubit>().loadLookups();
+    context.read<AddExpenseCubit>().loadLookups(
+          preloadedLookups: widget.initialLookups,
+        );
   }
 
   @override
@@ -31,25 +39,28 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         if (state.errorMessage != null) AppToast.error(context, state.errorMessage!);
         if (state.saveSuccess) {
           AppToast.success(context, LocaleKeys.expensesCreatedSuccessfully.tr());
-          context.go(RoutePaths.expenses);
+          if (context.canPop()) {
+            context.pop(true);
+          } else {
+            context.go(RoutePaths.expenses);
+          }
         }
       },
       child: Scaffold(
         appBar: AppBar(
           title: Text(LocaleKeys.expensesAddTitle.tr()),
-          actions: [
-            TextButton.icon(
-              onPressed: () => context.go(RoutePaths.expenses),
-              icon: const Icon(Icons.close),
-              label: Text(LocaleKeys.actionsCancel.tr()),
-            ),
-          ],
         ),
         body: BlocBuilder<AddExpenseCubit, AddExpenseState>(
           builder: (context, state) => ExpenseForm(
             state: state,
             cubit: context.read<AddExpenseCubit>(),
-            onCancel: () => context.go(RoutePaths.expenses),
+            onCancel: () {
+              if (context.canPop()) {
+                context.pop(false);
+              } else {
+                context.go(RoutePaths.expenses);
+              }
+            },
           ),
         ),
       ),

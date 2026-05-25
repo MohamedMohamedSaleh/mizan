@@ -112,6 +112,7 @@ class ExpenseForm extends StatelessWidget {
                         value: state.selectedVendor,
                         items: state.lookups.vendors,
                         itemLabel: (item) => item.name,
+                        showClear: true,
                         onChanged: cubit.vendorChanged,
                       ),
                     ),
@@ -134,6 +135,7 @@ class ExpenseForm extends StatelessWidget {
                         value: state.selectedSubAccount,
                         items: state.lookups.accounts,
                         itemLabel: (item) => '${item.code} - ${item.name}',
+                        showClear: true,
                         onChanged: cubit.subAccountChanged,
                       ),
                     ),
@@ -146,6 +148,7 @@ class ExpenseForm extends StatelessWidget {
                         value: state.selectedTax,
                         items: state.lookups.taxes,
                         itemLabel: (item) => '${item.name} (${item.rate}%)',
+                        showClear: true,
                         onChanged: cubit.taxChanged,
                       ),
                       _AttachmentPlaceholder(),
@@ -338,7 +341,6 @@ class _TextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      key: ValueKey('$label-$initialValue'),
       initialValue: initialValue,
       onChanged: onChanged,
       keyboardType: keyboardType,
@@ -363,6 +365,7 @@ class _Dropdown<T> extends StatelessWidget {
     required this.onChanged,
     this.hint,
     this.errorKey,
+    this.showClear = false,
   });
   final String label;
   final String? hint;
@@ -371,14 +374,22 @@ class _Dropdown<T> extends StatelessWidget {
   final String Function(T item) itemLabel;
   final ValueChanged<T?> onChanged;
   final String? errorKey;
+  final bool showClear;
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
+      key: ValueKey(value),
       initialValue: value,
       isExpanded: true,
       decoration: InputDecoration(
         labelText: label,
         errorText: errorKey?.tr(),
+        suffixIcon: showClear && value != null
+            ? IconButton(
+                icon: const Icon(Icons.clear, size: 20),
+                onPressed: () => onChanged(null),
+              )
+            : null,
       ),
       hint: hint?.isEmpty ?? true ? null : Text(hint!),
       items: items

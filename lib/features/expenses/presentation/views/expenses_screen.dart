@@ -42,9 +42,20 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       child: Scaffold(
         appBar: AppBar(title: Text(LocaleKeys.expensesTitle.tr())),
         floatingActionButton: context.isMobile
-            ? FloatingActionButton(
-                onPressed: () => context.go(RoutePaths.addExpense),
-                child: const Icon(Icons.add),
+            ? BlocBuilder<ExpensesCubit, ExpensesState>(
+                builder: (context, state) {
+                  final lookups = switch (state) {
+                    ExpensesLoaded loaded => loaded.lookups,
+                    ExpensesEmpty empty => empty.lookups,
+                    _ => null,
+                  };
+                  return FloatingActionButton(
+                    onPressed: lookups == null
+                        ? null
+                        : () => _openAddExpense(context, lookups),
+                    child: const Icon(Icons.add),
+                  );
+                },
               )
             : null,
         body: BlocBuilder<ExpensesCubit, ExpensesState>(
@@ -98,7 +109,7 @@ class _ExpensesBody extends StatelessWidget {
       child: ListView(
         padding: padding,
         children: [
-          if (!context.isMobile) _Header(),
+          if (!context.isMobile) _Header(lookups: lookups),
           AppSpacing.gapH16,
           _SummaryStrip(expenses: expenses),
           AppSpacing.gapH16,
@@ -120,6 +131,10 @@ class _ExpensesBody extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
+  const _Header({required this.lookups});
+
+  final ExpenseFormLookupsViewModel lookups;
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -133,7 +148,7 @@ class _Header extends StatelessWidget {
           ),
         ),
         ElevatedButton.icon(
-          onPressed: () => context.go(RoutePaths.addExpense),
+          onPressed: () => _openAddExpense(context, lookups),
           icon: const Icon(Icons.add),
           label: Text(LocaleKeys.expensesAdd.tr()),
         ),
@@ -321,6 +336,7 @@ class _CategoryFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
+      key: ValueKey(filters.categoryId),
       initialValue: filters.categoryId,
       isExpanded: true,
       decoration: InputDecoration(labelText: LocaleKeys.expensesCategory.tr()),
@@ -341,6 +357,7 @@ class _StatusFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<ExpenseStatus>(
+      key: ValueKey(filters.status),
       initialValue: filters.status,
       isExpanded: true,
       decoration: InputDecoration(labelText: LocaleKeys.expensesStatus.tr()),
@@ -537,5 +554,18 @@ Future<void> _confirmDelete(BuildContext context, String id) async {
 
   if (confirmed ?? false) {
     await expensesCubit.deleteExpense(id);
+  }
+}
+
+Future<void> _openAddExpense(
+  BuildContext context,
+  ExpenseFormLookupsViewModel lookups,
+) async {
+  final shouldRefresh = await context.push<bool>(
+    RoutePaths.addExpense,
+    extra: lookups,
+  );
+  if (shouldRefresh == true && context.mounted) {
+    await context.read<ExpensesCubit>().refresh();
   }
 }

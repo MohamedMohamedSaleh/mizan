@@ -25,7 +25,28 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
   final LoadExpenseFormLookupsUseCase _loadLookupsUseCase;
   final AddExpenseUseCase _addExpenseUseCase;
 
-  Future<void> loadLookups() async {
+  Future<void> loadLookups({
+    ExpenseFormLookupsViewModel? preloadedLookups,
+    bool forceRefresh = false,
+  }) async {
+    if (preloadedLookups != null &&
+        preloadedLookups != ExpenseFormLookupsViewModel.empty &&
+        !forceRefresh) {
+      emit(
+        state.copyWith(
+          isLookupsLoading: false,
+          lookups: preloadedLookups,
+          clearErrorMessage: true,
+        ),
+      );
+      generateJournalPreview();
+      return;
+    }
+
+    if (state.lookups != ExpenseFormLookupsViewModel.empty && !forceRefresh) {
+      return;
+    }
+
     emit(state.copyWith(isLookupsLoading: true, clearErrorMessage: true));
     final result = await _loadLookupsUseCase(const NoParams());
     result.fold(

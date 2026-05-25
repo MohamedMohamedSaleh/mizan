@@ -20,7 +20,12 @@ import '../widgets/expense_status_badge.dart';
 import '../widgets/expense_summary_card.dart';
 
 class ExpensesScreen extends StatefulWidget {
-  const ExpensesScreen({super.key});
+  const ExpensesScreen({
+    super.key,
+    this.showAppBar = true,
+  });
+
+  final bool showAppBar;
 
   @override
   State<ExpensesScreen> createState() => _ExpensesScreenState();
@@ -44,7 +49,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
         if (state is ExpensesError) AppToast.error(context, state.message);
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(LocaleKeys.expensesTitle.tr())),
+        appBar: widget.showAppBar
+            ? AppBar(title: Text(LocaleKeys.expensesTitle.tr()))
+            : null,
         floatingActionButton: context.isMobile
             ? BlocBuilder<ExpensesCubit, ExpensesState>(
                 builder: (context, state) {
@@ -195,16 +202,19 @@ class _SummaryStrip extends StatelessWidget {
         title: LocaleKeys.expensesSummaryLast7Days.tr(),
         amount: _sumSince(const Duration(days: 7)),
         currency: 'EGP',
+        icon: Icons.today_outlined,
       ),
       ExpenseSummaryCard(
         title: LocaleKeys.expensesSummaryLast30Days.tr(),
         amount: _sumSince(const Duration(days: 30)),
         currency: 'EGP',
+        icon: Icons.date_range_outlined,
       ),
       ExpenseSummaryCard(
         title: LocaleKeys.expensesSummaryLast365Days.tr(),
         amount: _sumSince(const Duration(days: 365)),
         currency: 'EGP',
+        icon: Icons.calendar_month_outlined,
       ),
     ];
     if (context.isMobile) {
@@ -599,14 +609,16 @@ Future<void> _openAddExpense(
 }
 
 Future<void> _openEditExpense(BuildContext context, String expenseId) async {
-  final shouldRefresh = await context.push<bool>('/expenses/$expenseId/edit');
+  final shouldRefresh = await context.push<bool>(
+    '/dashboard/expenses/$expenseId/edit',
+  );
   if (shouldRefresh == true && context.mounted) {
     await context.read<ExpensesCubit>().refresh();
   }
 }
 
 Future<void> _openExpenseDetails(BuildContext context, String expenseId) async {
-  final shouldRefresh = await context.push<bool>('/expenses/$expenseId');
+  final shouldRefresh = await context.push<bool>('/dashboard/expenses/$expenseId');
   if (shouldRefresh == true && context.mounted) {
     await context.read<ExpensesCubit>().refresh();
   }

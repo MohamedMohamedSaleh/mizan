@@ -1,98 +1,122 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/localization/locale_keys.dart';
-import '../../../../core/router/route_names.dart';
-import '../../../../core/services/toast_service.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../auth/presentation/cubit/auth_cubit.dart';
-import '../../../auth/presentation/cubit/auth_state.dart';
 
 class DashboardView extends StatelessWidget {
   const DashboardView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final modules = <_DashboardModule>[
-      _DashboardModule(
-        title: LocaleKeys.navExpenses.tr(),
-        icon: Icons.receipt_long_outlined,
-        routePath: RoutePaths.expenses,
-      ),
-      _DashboardModule(
-        title: LocaleKeys.navFinance.tr(),
-        icon: Icons.account_balance_wallet_outlined,
-      ),
-      _DashboardModule(
-        title: LocaleKeys.navGeneralAccounting.tr(),
-        icon: Icons.calculate_outlined,
-      ),
-      _DashboardModule(
-        title: LocaleKeys.navReports.tr(),
-        icon: Icons.assessment_outlined,
-      ),
-      _DashboardModule(
-        title: LocaleKeys.navSettings.tr(),
-        icon: Icons.settings_outlined,
-      ),
-    ];
-
-    final crossAxisCount = context.responsive(mobile: 1, tablet: 2, desktop: 4);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(LocaleKeys.appName.tr()),
-        actions: [
-          BlocBuilder<AuthCubit, AuthState>(
-            builder: (context, state) {
-              final isLoading = state is AuthLoading;
-              return TextButton.icon(
-                onPressed: isLoading ? null : () => context.read<AuthCubit>().logout(),
-                icon: const Icon(Icons.logout),
-                label: Text(LocaleKeys.authLogout.tr()),
-              );
-            },
+    return ListView(
+      padding: _pagePadding(context),
+      children: [
+        Container(
+          padding: AppSpacing.paddingAllXl,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                context.colors.primary.withValues(alpha: 0.16),
+                context.colors.card,
+              ],
+              begin: AlignmentDirectional.topStart,
+              end: AlignmentDirectional.bottomEnd,
+            ),
+            borderRadius: AppRadius.borderRadiusBase,
+            border: Border.all(color: context.colors.border),
           ),
-          AppSpacing.gapW8,
-        ],
-      ),
-      body: BlocListener<AuthCubit, AuthState>(
-        listener: (context, state) {
-          if (state is Unauthenticated) {
-            AppToast.success(context, LocaleKeys.authLogout.tr());
-          } else if (state is AuthError) {
-            AppToast.error(context, state.message);
-          }
-        },
-        child: SafeArea(
-          child: Padding(
-            padding: AppSpacing.paddingAllLg,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                LocaleKeys.navDashboard.tr(),
+                style: context.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              AppSpacing.gapH8,
+              Text(
+                LocaleKeys.appTagline.tr(),
+                style: context.textTheme.bodyLarge?.copyWith(
+                  color: context.colors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        AppSpacing.gapH16,
+        Wrap(
+          spacing: AppSpacing.md,
+          runSpacing: AppSpacing.md,
+          children: [
+            _DashboardMetric(
+              icon: Icons.receipt_long_outlined,
+              title: LocaleKeys.navExpenses.tr(),
+              description: LocaleKeys.dashboardRecentTransactions.tr(),
+            ),
+            _DashboardMetric(
+              icon: Icons.assessment_outlined,
+              title: LocaleKeys.navReports.tr(),
+              description: LocaleKeys.reportsGenerate.tr(),
+            ),
+            _DashboardMetric(
+              icon: Icons.account_balance_outlined,
+              title: LocaleKeys.navGeneralAccounting.tr(),
+              description: LocaleKeys.navJournalEntries.tr(),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class DashboardPlaceholderView extends StatelessWidget {
+  const DashboardPlaceholderView({
+    super.key,
+    required this.title,
+    required this.description,
+    required this.icon,
+  });
+
+  final String title;
+  final String description;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: _pagePadding(context),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560),
+          child: Container(
+            padding: AppSpacing.paddingAllXl,
+            decoration: BoxDecoration(
+              color: context.colors.card,
+              borderRadius: AppRadius.borderRadiusBase,
+              border: Border.all(color: context.colors.border),
+            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
+                Icon(icon, size: 44, color: context.colors.primary),
+                AppSpacing.gapH16,
                 Text(
-                  '${LocaleKeys.dashboardWelcome.tr()} ${LocaleKeys.appName.tr()}',
+                  title,
                   style: context.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-                AppSpacing.gapH20,
-                Expanded(
-                  child: GridView.builder(
-                    itemCount: modules.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 1.4,
-                    ),
-                    itemBuilder: (context, index) {
-                      final module = modules[index];
-                      return _ModuleCard(module: module);
-                    },
+                AppSpacing.gapH8,
+                Text(
+                  description,
+                  textAlign: TextAlign.center,
+                  style: context.textTheme.bodyMedium?.copyWith(
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -104,54 +128,57 @@ class DashboardView extends StatelessWidget {
   }
 }
 
-class _ModuleCard extends StatelessWidget {
-  const _ModuleCard({required this.module});
+class _DashboardMetric extends StatelessWidget {
+  const _DashboardMetric({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
 
-  final _DashboardModule module;
+  final IconData icon;
+  final String title;
+  final String description;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      child: InkWell(
-        onTap: module.routePath == null
-            ? null
-            : () => context.go(module.routePath!),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: AppSpacing.paddingAllLg,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                module.icon,
-                size: 32,
-                color: context.colors.primary,
+    return SizedBox(
+      width: context.responsive(mobile: double.infinity, tablet: 260),
+      child: Container(
+        padding: AppSpacing.paddingAllLg,
+        decoration: BoxDecoration(
+          color: context.colors.card,
+          borderRadius: AppRadius.borderRadiusBase,
+          border: Border.all(color: context.colors.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: context.colors.primary),
+            AppSpacing.gapH12,
+            Text(
+              title,
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
               ),
-              AppSpacing.gapH16,
-              Text(
-                module.title,
-                style: context.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            ),
+            AppSpacing.gapH4,
+            Text(
+              description,
+              style: context.textTheme.bodySmall?.copyWith(
+                color: context.colors.textSecondary,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _DashboardModule {
-  const _DashboardModule({
-    required this.title,
-    required this.icon,
-    this.routePath,
-  });
-
-  final String title;
-  final IconData icon;
-  final String? routePath;
+EdgeInsets _pagePadding(BuildContext context) {
+  return context.responsive(
+    mobile: AppSpacing.pagePaddingMobile,
+    tablet: AppSpacing.pagePaddingTablet,
+    desktop: AppSpacing.pagePaddingDesktop,
+  );
 }

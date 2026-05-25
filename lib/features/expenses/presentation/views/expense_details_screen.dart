@@ -76,7 +76,9 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
   }
 
   Future<void> _openEditExpense(String expenseId) async {
-    final wasUpdated = await context.push<bool>('/expenses/$expenseId/edit');
+    final wasUpdated = await context.push<bool>(
+      '/dashboard/expenses/$expenseId/edit',
+    );
     if (!mounted) return;
     if (wasUpdated == true) {
       _shouldRefreshParentOnExit = true;

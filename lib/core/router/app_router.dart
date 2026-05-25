@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +14,7 @@ import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/register_view.dart';
 import '../../features/auth/presentation/views/verify_register_otp_view.dart';
 import '../../features/dashboard/presentation/views/dashboard_view.dart';
+import '../../features/dashboard/presentation/widgets/dashboard_shell.dart';
 import '../../features/expenses/presentation/cubit/add_expense_cubit.dart';
 import '../../features/expenses/presentation/cubit/edit_expense_cubit.dart';
 import '../../features/expenses/presentation/cubit/expense_details_cubit.dart';
@@ -23,6 +25,7 @@ import '../../features/expenses/presentation/views/edit_expense_screen.dart';
 import '../../features/expenses/presentation/views/expense_details_screen.dart';
 import '../../features/expenses/presentation/views/expenses_screen.dart';
 import '../di/injection.dart';
+import '../localization/locale_keys.dart';
 import 'route_names.dart';
 
 /// Application router powered by [GoRouter].
@@ -104,50 +107,109 @@ class AppRouter {
         builder: (context, state) => const ForgotPasswordView(),
       ),
       GoRoute(
-        path: RoutePaths.dashboard,
-        name: RouteNames.dashboard,
-        builder: (context, state) => const DashboardView(),
+        path: '/expenses',
+        redirect: (_, __) => RoutePaths.expenses,
       ),
       GoRoute(
-        path: RoutePaths.expenses,
-        name: RouteNames.expenses,
-        builder: (context, state) => BlocProvider(
-          create: (_) => sl<ExpensesCubit>(),
-          child: const ExpensesScreen(),
-        ),
+        path: '/expenses/add',
+        redirect: (_, __) => RoutePaths.addExpense,
       ),
       GoRoute(
-        path: RoutePaths.addExpense,
-        name: RouteNames.addExpense,
-        builder: (context, state) {
-          final preloadedLookups = state.extra as ExpenseFormLookupsViewModel?;
-          return BlocProvider(
-            create: (_) => sl<AddExpenseCubit>(),
-            child: AddExpenseScreen(initialLookups: preloadedLookups),
-          );
-        },
+        path: '/expenses/:id/edit',
+        redirect: (_, state) =>
+            '/dashboard/expenses/${state.pathParameters['id']}/edit',
       ),
       GoRoute(
-        path: RoutePaths.expenseDetails,
-        name: RouteNames.expenseDetails,
-        builder: (context, state) {
-          final id = state.pathParameters['id'] ?? '';
-          return BlocProvider(
-            create: (_) => sl<ExpenseDetailsCubit>(),
-            child: ExpenseDetailsScreen(expenseId: id),
-          );
-        },
+        path: '/expenses/:id',
+        redirect: (_, state) => '/dashboard/expenses/${state.pathParameters['id']}',
       ),
-      GoRoute(
-        path: RoutePaths.editExpense,
-        name: RouteNames.editExpense,
-        builder: (context, state) {
-          final id = state.pathParameters['id'] ?? '';
-          return BlocProvider(
-            create: (_) => sl<EditExpenseCubit>(),
-            child: EditExpenseScreen(expenseId: id),
-          );
-        },
+      ShellRoute(
+        builder: (context, state, child) => DashboardShell(child: child),
+        routes: [
+          GoRoute(
+            path: RoutePaths.dashboard,
+            name: RouteNames.dashboard,
+            builder: (context, state) => const DashboardView(),
+          ),
+          GoRoute(
+            path: RoutePaths.expenses,
+            name: RouteNames.expenses,
+            builder: (context, state) => BlocProvider(
+              create: (_) => sl<ExpensesCubit>(),
+              child: const ExpensesScreen(showAppBar: false),
+            ),
+          ),
+          GoRoute(
+            path: RoutePaths.addExpense,
+            name: RouteNames.addExpense,
+            builder: (context, state) {
+              final preloadedLookups =
+                  state.extra as ExpenseFormLookupsViewModel?;
+              return BlocProvider(
+                create: (_) => sl<AddExpenseCubit>(),
+                child: AddExpenseScreen(initialLookups: preloadedLookups),
+              );
+            },
+          ),
+          GoRoute(
+            path: RoutePaths.editExpense,
+            name: RouteNames.editExpense,
+            builder: (context, state) {
+              final id = state.pathParameters['id'] ?? '';
+              return BlocProvider(
+                create: (_) => sl<EditExpenseCubit>(),
+                child: EditExpenseScreen(expenseId: id),
+              );
+            },
+          ),
+          GoRoute(
+            path: RoutePaths.expenseDetails,
+            name: RouteNames.expenseDetails,
+            builder: (context, state) {
+              final id = state.pathParameters['id'] ?? '';
+              return BlocProvider(
+                create: (_) => sl<ExpenseDetailsCubit>(),
+                child: ExpenseDetailsScreen(expenseId: id),
+              );
+            },
+          ),
+          GoRoute(
+            path: RoutePaths.reports,
+            name: RouteNames.reports,
+            builder: (context, state) => DashboardPlaceholderView(
+              title: LocaleKeys.navReports.tr(),
+              description: LocaleKeys.reportsGenerate.tr(),
+              icon: Icons.assessment_outlined,
+            ),
+          ),
+          GoRoute(
+            path: RoutePaths.journalEntries,
+            name: RouteNames.journalEntries,
+            builder: (context, state) => DashboardPlaceholderView(
+              title: LocaleKeys.navJournalEntries.tr(),
+              description: LocaleKeys.navGeneralAccounting.tr(),
+              icon: Icons.account_balance_outlined,
+            ),
+          ),
+          GoRoute(
+            path: RoutePaths.accounts,
+            name: RouteNames.accounts,
+            builder: (context, state) => DashboardPlaceholderView(
+              title: LocaleKeys.navAccounts.tr(),
+              description: LocaleKeys.navFinance.tr(),
+              icon: Icons.account_tree_outlined,
+            ),
+          ),
+          GoRoute(
+            path: RoutePaths.settings,
+            name: RouteNames.settings,
+            builder: (context, state) => DashboardPlaceholderView(
+              title: LocaleKeys.navSettings.tr(),
+              description: LocaleKeys.settingsTitle.tr(),
+              icon: Icons.settings_outlined,
+            ),
+          ),
+        ],
       ),
     ],
   );

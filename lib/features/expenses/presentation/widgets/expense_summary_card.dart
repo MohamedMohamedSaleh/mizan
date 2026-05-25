@@ -11,11 +11,13 @@ class ExpenseSummaryCard extends StatelessWidget {
     required this.title,
     required this.amount,
     required this.currency,
+    required this.icon,
   });
 
   final String title;
   final double amount;
   final String currency;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +32,25 @@ class ExpenseSummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: context.colors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 18, color: context.colors.primary),
+              ),
+            ],
+          ),
+          AppSpacing.gapH12,
           Text(
             title,
             style: context.textTheme.labelLarge?.copyWith(
               color: context.colors.textSecondary,
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
             ),
           ),
           AppSpacing.gapH12,
@@ -42,6 +59,7 @@ class ExpenseSummaryCard extends StatelessWidget {
             style: context.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w800,
               color: context.colors.textPrimary,
+              fontSize: 20,
             ),
           ),
         ],

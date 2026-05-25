@@ -26,6 +26,8 @@ class ExpenseDetailsScreen extends StatefulWidget {
 }
 
 class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
+  bool _shouldRefreshParentOnExit = false;
+
   @override
   void initState() {
     super.initState();
@@ -51,13 +53,7 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
           title: Text(LocaleKeys.expensesDetailsTitle.tr()),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go(RoutePaths.expenses);
-              }
-            },
+            onPressed: _closeDetails,
           ),
         ),
         body: BlocBuilder<ExpenseDetailsCubit, ExpenseDetailsState>(
@@ -83,7 +79,16 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
     final wasUpdated = await context.push<bool>('/expenses/$expenseId/edit');
     if (!mounted) return;
     if (wasUpdated == true) {
+      _shouldRefreshParentOnExit = true;
       await context.read<ExpenseDetailsCubit>().loadExpense(widget.expenseId);
+    }
+  }
+
+  void _closeDetails() {
+    if (context.canPop()) {
+      context.pop(_shouldRefreshParentOnExit);
+    } else {
+      context.go(RoutePaths.expenses);
     }
   }
 }

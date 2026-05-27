@@ -27,7 +27,9 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
         _vendorsRepository = vendorsRepository,
         _categoriesRepository = categoriesRepository,
         super(AddExpenseState(
-            code: _generateCode(), expenseDate: DateTime.now()));
+          code: _generateSuggestedCode(),
+          expenseDate: DateTime.now(),
+        ));
 
   final LoadExpenseFormLookupsUseCase _loadLookupsUseCase;
   final AddExpenseUseCase _addExpenseUseCase;
@@ -98,6 +100,16 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
       state.copyWith(
         description: value.trim().isEmpty ? null : value,
         clearDescription: value.trim().isEmpty,
+        saveSuccess: false,
+        clearErrorMessage: true,
+      ),
+    );
+  }
+
+  void codeChanged(String value) {
+    emit(
+      state.copyWith(
+        code: value,
         saveSuccess: false,
         clearErrorMessage: true,
       ),
@@ -307,6 +319,10 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
       errors[AddExpenseState.fieldAmount] =
           LocaleKeys.expensesValidationAmountRequired;
     }
+    if ((state.code ?? '').trim().isEmpty) {
+      errors[AddExpenseState.fieldCode] =
+          LocaleKeys.expensesValidationCodeRequired;
+    }
     if (state.expenseDate == null) {
       errors[AddExpenseState.fieldDate] =
           LocaleKeys.expensesValidationDateRequired;
@@ -326,7 +342,7 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
     return ExpenseEntity(
       id: '',
       userId: '',
-      code: state.code ?? _generateCode(),
+      code: (state.code ?? '').trim(),
       amount: state.amount ?? 0,
       currency: state.currency,
       description: state.description,
@@ -410,7 +426,7 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
     emit(state.copyWith(clearErrorMessage: true));
   }
 
-  static String _generateCode() {
-    return 'EXP-${DateTime.now().millisecondsSinceEpoch}';
+  static String _generateSuggestedCode() {
+    return 'EXP-000001';
   }
 }

@@ -202,6 +202,7 @@
                      "updated_successfully":  "Expense updated successfully",
                      "deleted_successfully":  "Expense deleted successfully",
                      "validation_amount_required":  "Enter an amount greater than zero.",
+                     "validation_code_required":  "Expense code is required.",
                      "validation_category_required":  "Select an expense category.",
                      "validation_paid_from_required":  "Select the account used to pay this expense.",
                      "validation_date_required":  "Select an expense date.",

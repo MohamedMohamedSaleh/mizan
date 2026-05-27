@@ -36,7 +36,8 @@ class ExpenseForm extends StatelessWidget {
     }
 
     final hasRequiredLookups =
-        state.lookups.categories.isNotEmpty && state.lookups.paymentAccounts.isNotEmpty;
+        state.lookups.categories.isNotEmpty &&
+        state.lookups.paymentAccounts.isNotEmpty;
 
     return SingleChildScrollView(
       padding: context.responsive(
@@ -50,7 +51,8 @@ class ExpenseForm extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (!hasRequiredLookups) _LookupEmptyCard(onSeed: cubit.loadLookups),
+              if (!hasRequiredLookups)
+                _LookupEmptyCard(onSeed: cubit.loadLookups),
               if (showSavedWarning) ...[
                 _InfoCard(
                   icon: Icons.info_outline,
@@ -78,12 +80,15 @@ class ExpenseForm extends StatelessWidget {
                       _TextField(
                         label: LocaleKeys.expensesCode.tr(),
                         initialValue: state.code,
-                        readOnly: true,
+                        errorKey:
+                            state.validationErrors[AddExpenseState.fieldCode],
+                        onChanged: cubit.codeChanged,
                       ),
                       _DateField(
                         label: LocaleKeys.expensesDate.tr(),
                         value: state.expenseDate,
-                        errorKey: state.validationErrors[AddExpenseState.fieldDate],
+                        errorKey:
+                            state.validationErrors[AddExpenseState.fieldDate],
                         onChanged: cubit.dateChanged,
                       ),
                     ),
@@ -103,8 +108,8 @@ class ExpenseForm extends StatelessWidget {
                         value: state.selectedCategory,
                         items: state.lookups.categories,
                         itemLabel: (item) => item.name,
-                        errorKey:
-                            state.validationErrors[AddExpenseState.fieldCategory],
+                        errorKey: state
+                            .validationErrors[AddExpenseState.fieldCategory],
                         onChanged: cubit.categoryChanged,
                         onCreateNew: cubit.createCategory,
                       ),
@@ -130,8 +135,9 @@ class ExpenseForm extends StatelessWidget {
                         value: state.selectedPaidFromAccount,
                         items: state.lookups.paymentAccounts,
                         itemLabel: (item) => '${item.code} - ${item.name}',
-                        errorKey: state.validationErrors[
-                            AddExpenseState.fieldPaidFromAccount],
+                        errorKey:
+                            state.validationErrors[AddExpenseState
+                                .fieldPaidFromAccount],
                         onChanged: cubit.paidFromAccountChanged,
                       ),
                       _Dropdown<AccountEntity>(
@@ -162,7 +168,8 @@ class ExpenseForm extends StatelessWidget {
                     CheckboxListTile(
                       contentPadding: EdgeInsets.zero,
                       value: state.isRecurring,
-                      onChanged: (value) => cubit.recurringChanged(value ?? false),
+                      onChanged: (value) =>
+                          cubit.recurringChanged(value ?? false),
                       title: Text(LocaleKeys.expensesRecurring.tr()),
                       controlAffinity: ListTileControlAffinity.leading,
                     ),
@@ -227,9 +234,7 @@ class ExpenseForm extends StatelessWidget {
 
   Widget _responsiveRow(BuildContext context, Widget first, Widget second) {
     if (context.isMobile) {
-      return Column(
-        children: [first, AppSpacing.gapH16, second],
-      );
+      return Column(children: [first, AppSpacing.gapH16, second]);
     }
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -324,12 +329,12 @@ class _AmountField extends StatelessWidget {
 
 class _TextField extends StatelessWidget {
   const _TextField({
+    super.key,
     required this.label,
     this.initialValue,
     this.onChanged,
     this.keyboardType,
     this.inputFormatters,
-    this.readOnly = false,
     this.maxLines = 1,
     this.errorKey,
     this.textStyle,
@@ -339,24 +344,20 @@ class _TextField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
-  final bool readOnly;
   final int maxLines;
   final String? errorKey;
   final TextStyle? textStyle;
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      key: key,
       initialValue: initialValue,
       onChanged: onChanged,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
-      readOnly: readOnly,
       maxLines: maxLines,
       style: textStyle,
-      decoration: InputDecoration(
-        labelText: label,
-        errorText: errorKey?.tr(),
-      ),
+      decoration: InputDecoration(labelText: label, errorText: errorKey?.tr()),
     );
   }
 }
@@ -455,8 +456,9 @@ class _SearchableDropdownState<T> extends State<_SearchableDropdown<T>> {
   void didUpdateWidget(covariant _SearchableDropdown<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.value != oldWidget.value) {
-      _textController.text =
-          widget.value != null ? widget.itemLabel(widget.value as T) : '';
+      _textController.text = widget.value != null
+          ? widget.itemLabel(widget.value as T)
+          : '';
     }
   }
 
@@ -503,7 +505,8 @@ class _SearchableDropdownState<T> extends State<_SearchableDropdown<T>> {
         final query = controller.text.trim();
         final List<T> matches = widget.items.where((item) {
           final name =
-              (widget.searchLabel?.call(item) ?? widget.itemLabel(item)).toLowerCase();
+              (widget.searchLabel?.call(item) ?? widget.itemLabel(item))
+                  .toLowerCase();
           return name.contains(query.toLowerCase());
         }).toList();
 
@@ -518,9 +521,7 @@ class _SearchableDropdownState<T> extends State<_SearchableDropdown<T>> {
           if (widget.onCreateNew != null && query.isNotEmpty && !hasExactMatch)
             ListTile(
               leading: const Icon(Icons.add_circle_outline, color: Colors.blue),
-              title: Text(
-                '${LocaleKeys.actionsAdd.tr()} "$query"',
-              ),
+              title: Text('${LocaleKeys.actionsAdd.tr()} "$query"'),
               onTap: () async {
                 controller.closeView(query);
                 final newItem = await widget.onCreateNew!(query);
@@ -583,7 +584,9 @@ class _AttachmentPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InputDecorator(
-      decoration: InputDecoration(labelText: LocaleKeys.expensesAttachment.tr()),
+      decoration: InputDecoration(
+        labelText: LocaleKeys.expensesAttachment.tr(),
+      ),
       child: Row(
         children: [
           Icon(Icons.attach_file_outlined, color: context.colors.textSecondary),
@@ -617,7 +620,9 @@ class _JournalPreview extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(child: Text(line.accountName)),
-                  Text('${line.debit.toStringAsFixed(2)} / ${line.credit.toStringAsFixed(2)}'),
+                  Text(
+                    '${line.debit.toStringAsFixed(2)} / ${line.credit.toStringAsFixed(2)}',
+                  ),
                 ],
               ),
             ),
@@ -643,8 +648,8 @@ class _JournalPreview extends StatelessWidget {
 }
 
 String _recurrenceTypeLabel(RecurrenceType type) => switch (type) {
-      RecurrenceType.daily => LocaleKeys.reportsDaily.tr(),
-      RecurrenceType.weekly => LocaleKeys.reportsWeekly.tr(),
-      RecurrenceType.monthly => LocaleKeys.reportsMonthly.tr(),
-      RecurrenceType.yearly => LocaleKeys.reportsYearly.tr(),
-    };
+  RecurrenceType.daily => LocaleKeys.reportsDaily.tr(),
+  RecurrenceType.weekly => LocaleKeys.reportsWeekly.tr(),
+  RecurrenceType.monthly => LocaleKeys.reportsMonthly.tr(),
+  RecurrenceType.yearly => LocaleKeys.reportsYearly.tr(),
+};

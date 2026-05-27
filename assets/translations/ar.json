@@ -202,6 +202,7 @@
     "updated_successfully": "تم تحديث المصروف بنجاح",
     "deleted_successfully": "تم حذف المصروف بنجاح",
     "validation_amount_required": "أدخل مبلغًا أكبر من صفر.",
+    "validation_code_required": "كود المصروف مطلوب.",
     "validation_category_required": "اختر تصنيف المصروف.",
     "validation_paid_from_required": "اختر الحساب المستخدم لسداد هذا المصروف.",
     "validation_date_required": "اختر تاريخ المصروف.",

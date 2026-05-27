@@ -14,6 +14,12 @@ Future<Result<T>> guardExpenseRepositoryCall<T>(
   } on AuthException catch (error) {
     return Error(AuthFailure(message: error.message));
   } on PostgrestException catch (error) {
+    final errorDetails = '${error.details ?? ''}';
+    if (error.code == '23505' &&
+        (error.message.contains('expenses_user_code_unique') ||
+            errorDetails.contains('expenses_user_code_unique'))) {
+      return Error(ServerFailure(message: 'كود المصروف مستخدم من قبل'));
+    }
     return Error(ServerFailure(message: error.message));
   } catch (error) {
     return Error(UnexpectedFailure(message: error.toString()));

@@ -224,6 +224,8 @@ abstract final class LocaleKeys {
       'expenses.deleted_successfully';
   static const String expensesValidationAmountRequired =
       'expenses.validation_amount_required';
+  static const String expensesValidationCodeRequired =
+      'expenses.validation_code_required';
   static const String expensesValidationCategoryRequired =
       'expenses.validation_category_required';
   static const String expensesValidationPaidFromRequired =

@@ -129,6 +129,7 @@ class AddExpenseState extends Equatable {
   }
 
   static const fieldAmount = 'amount';
+  static const fieldCode = 'code';
   static const fieldDate = 'expenseDate';
   static const fieldCategory = 'category';
   static const fieldPaidFromAccount = 'paidFromAccount';

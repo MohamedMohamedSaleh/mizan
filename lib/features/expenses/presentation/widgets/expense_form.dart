@@ -118,9 +118,10 @@ class ExpenseForm extends StatelessWidget {
                         hint: LocaleKeys.expensesSelectVendor.tr(),
                         value: state.selectedVendor,
                         items: state.lookups.vendors,
-                        itemLabel: (item) =>
-                            '${item.name} (${VendorStatusUtils.label(item.status)})',
+                        itemLabel: (item) => item.name,
                         searchLabel: (item) => item.name,
+                        suggestionSubtitle: (item) =>
+                            VendorStatusUtils.label(item.status),
                         showClear: true,
                         onChanged: cubit.vendorChanged,
                         onCreateNew: cubit.createVendor,
@@ -329,7 +330,6 @@ class _AmountField extends StatelessWidget {
 
 class _TextField extends StatelessWidget {
   const _TextField({
-    super.key,
     required this.label,
     this.initialValue,
     this.onChanged,
@@ -350,7 +350,6 @@ class _TextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      key: key,
       initialValue: initialValue,
       onChanged: onChanged,
       keyboardType: keyboardType,
@@ -418,6 +417,7 @@ class _SearchableDropdown<T> extends StatefulWidget {
     required this.items,
     required this.itemLabel,
     this.searchLabel,
+    this.suggestionSubtitle,
     required this.onChanged,
     this.onCreateNew,
     this.hint,
@@ -431,6 +431,7 @@ class _SearchableDropdown<T> extends StatefulWidget {
   final List<T> items;
   final String Function(T item) itemLabel;
   final String Function(T item)? searchLabel;
+  final String Function(T item)? suggestionSubtitle;
   final ValueChanged<T?> onChanged;
   final Future<T?> Function(String query)? onCreateNew;
   final String? errorKey;
@@ -478,6 +479,11 @@ class _SearchableDropdownState<T> extends State<_SearchableDropdown<T>> {
           controller: _textController,
           readOnly: true,
           onTap: () {
+            if (widget.value != null) {
+              _searchController.text =
+                  widget.searchLabel?.call(widget.value as T) ??
+                      widget.itemLabel(widget.value as T);
+            }
             controller.openView();
           },
           decoration: InputDecoration(
@@ -503,22 +509,36 @@ class _SearchableDropdownState<T> extends State<_SearchableDropdown<T>> {
       },
       suggestionsBuilder: (BuildContext context, SearchController controller) {
         final query = controller.text.trim();
+        final normalizedQuery = _normalizeSearchText(query);
         final List<T> matches = widget.items.where((item) {
-          final name =
-              (widget.searchLabel?.call(item) ?? widget.itemLabel(item))
-                  .toLowerCase();
-          return name.contains(query.toLowerCase());
+          final normalizedName = _normalizeSearchText(
+            widget.searchLabel?.call(item) ?? widget.itemLabel(item),
+          );
+          return normalizedName.contains(normalizedQuery);
         }).toList();
 
         final hasExactMatch = widget.items.any(
-          (item) =>
-              (widget.searchLabel?.call(item) ?? widget.itemLabel(item))
-                  .toLowerCase() ==
-              query.toLowerCase(),
+          (item) {
+            final normalizedName = _normalizeSearchText(
+              widget.searchLabel?.call(item) ?? widget.itemLabel(item),
+            );
+            return normalizedName == normalizedQuery;
+          },
         );
+        final selectedNormalized = widget.value == null
+            ? null
+            : _normalizeSearchText(
+                widget.searchLabel?.call(widget.value as T) ??
+                    widget.itemLabel(widget.value as T),
+              );
+        final isSelectedValueQuery =
+            selectedNormalized != null && selectedNormalized == normalizedQuery;
 
         return [
-          if (widget.onCreateNew != null && query.isNotEmpty && !hasExactMatch)
+          if (widget.onCreateNew != null &&
+              normalizedQuery.isNotEmpty &&
+              !hasExactMatch &&
+              !isSelectedValueQuery)
             ListTile(
               leading: const Icon(Icons.add_circle_outline, color: Colors.blue),
               title: Text('${LocaleKeys.actionsAdd.tr()} "$query"'),
@@ -533,8 +553,13 @@ class _SearchableDropdownState<T> extends State<_SearchableDropdown<T>> {
           ...matches.map((item) {
             return ListTile(
               title: Text(widget.itemLabel(item)),
+              subtitle: widget.suggestionSubtitle == null
+                  ? null
+                  : Text(widget.suggestionSubtitle!(item)),
               onTap: () {
-                controller.closeView(widget.itemLabel(item));
+                controller.closeView(
+                  widget.searchLabel?.call(item) ?? widget.itemLabel(item),
+                );
                 widget.onChanged(item);
               },
             );
@@ -542,6 +567,10 @@ class _SearchableDropdownState<T> extends State<_SearchableDropdown<T>> {
         ];
       },
     );
+  }
+
+  String _normalizeSearchText(String value) {
+    return value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
   }
 }
 

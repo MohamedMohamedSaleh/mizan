@@ -361,6 +361,19 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
   }
 
   Future<VendorEntity?> createVendor(String name) async {
+    final normalizedInput = _normalizeText(name);
+    for (final vendor in state.lookups.vendors) {
+      if (_normalizeText(vendor.name) == normalizedInput) {
+        emit(
+          state.copyWith(
+            selectedVendor: vendor,
+            clearErrorMessage: true,
+          ),
+        );
+        return vendor;
+      }
+    }
+
     emit(state.copyWith(clearErrorMessage: true));
     final result = await _vendorsRepository.createVendor(name);
     return result.fold(
@@ -428,5 +441,9 @@ class AddExpenseCubit extends Cubit<AddExpenseState> {
 
   static String _generateSuggestedCode() {
     return 'EXP-000001';
+  }
+
+  String _normalizeText(String value) {
+    return value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
   }
 }

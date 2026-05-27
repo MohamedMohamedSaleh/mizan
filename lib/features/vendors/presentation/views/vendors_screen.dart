@@ -95,6 +95,28 @@ class _VendorsScreenState extends State<VendorsScreen> {
                 summary: state.summary,
               );
             }
+            if (state is VendorsError) {
+              final hasCachedData =
+                  _cachedStatuses.isNotEmpty || _cachedVendors.isNotEmpty;
+              if (hasCachedData) {
+                return _VendorsBody(
+                  vendors: _cachedVendors,
+                  filters: _cachedFilters,
+                  availableStatuses: _cachedStatuses,
+                  summary: _summaryForCachedVendors(),
+                );
+              }
+              return _VendorsBody(
+                vendors: const [],
+                filters: state.filters,
+                availableStatuses: state.availableStatuses,
+                summary: const VendorsSummaryViewModel(
+                  totalCount: 0,
+                  withEmailCount: 0,
+                  withPhoneCount: 0,
+                ),
+              );
+            }
             return Center(child: Text(LocaleKeys.messagesError.tr()));
           },
         ),

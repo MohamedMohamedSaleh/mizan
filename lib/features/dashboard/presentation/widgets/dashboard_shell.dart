@@ -121,6 +121,12 @@ class DashboardShell extends StatelessWidget {
         routePath: RoutePaths.expenses,
       ),
       DashboardNavItem(
+        title: LocaleKeys.navVendors.tr(),
+        subtitle: LocaleKeys.vendorsManage.tr(),
+        icon: Icons.storefront_outlined,
+        routePath: RoutePaths.vendors,
+      ),
+      DashboardNavItem(
         title: LocaleKeys.navReports.tr(),
         subtitle: LocaleKeys.reportsGenerate.tr(),
         icon: Icons.assessment_outlined,

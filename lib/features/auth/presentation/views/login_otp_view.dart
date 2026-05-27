@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +11,7 @@ import '../../../../core/services/toast_service.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
+import '../utils/otp_cooldown_mixin.dart';
 import '../widgets/auth_widgets.dart';
 
 class LoginOtpView extends StatefulWidget {
@@ -21,7 +21,7 @@ class LoginOtpView extends StatefulWidget {
   State<LoginOtpView> createState() => _LoginOtpViewState();
 }
 
-class _LoginOtpViewState extends State<LoginOtpView> {
+class _LoginOtpViewState extends State<LoginOtpView> with OtpCooldownMixin {
   final _emailFormKey = GlobalKey<FormState>();
   final _otpFormKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -29,30 +29,9 @@ class _LoginOtpViewState extends State<LoginOtpView> {
 
   bool _otpSent = false;
   String _email = '';
-  Timer? _timer;
-  int _secondsRemaining = 120;
-
-  void _startTimer() {
-    _timer?.cancel();
-    setState(() {
-      _secondsRemaining = 120;
-    });
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_secondsRemaining == 0) {
-        setState(() {
-          _timer?.cancel();
-        });
-      } else {
-        setState(() {
-          _secondsRemaining--;
-        });
-      }
-    });
-  }
-
   @override
   void dispose() {
-    _timer?.cancel();
+    disposeOtpCooldown();
     _emailController.dispose();
     _otpController.dispose();
     super.dispose();
@@ -83,7 +62,7 @@ class _LoginOtpViewState extends State<LoginOtpView> {
               _otpSent = true;
               _email = state.email;
             });
-            _startTimer();
+            startOtpCooldown();
             AppToast.success(context, LocaleKeys.authOtpSentSuccessfully.tr());
           } else if (state is Authenticated) {
             AppToast.success(context, LocaleKeys.authLoginSuccessful.tr());
@@ -154,7 +133,7 @@ class _LoginOtpViewState extends State<LoginOtpView> {
               return AuthPrimaryButton(
                 label: LocaleKeys.authSendOtp.tr(),
                 isLoading: isLoading,
-                onPressed: _sendOtp,
+                onPressed: isLoading ? null : _sendOtp,
               );
             },
           ),
@@ -259,15 +238,14 @@ class _LoginOtpViewState extends State<LoginOtpView> {
             builder: (context, state) {
               final isLoading = state is SendingOtp;
               return TextButton(
-                onPressed: (isLoading || _secondsRemaining > 0)
+                onPressed: (isLoading || isCooldownActive)
                     ? null
                     : () {
                         context.read<AuthCubit>().sendEmailOtp(email: _email);
-                        _startTimer();
                       },
                 child: Text(
-                  _secondsRemaining > 0
-                      ? '${LocaleKeys.authResendOtp.tr()} (${_secondsRemaining}s)'
+                  isCooldownActive
+                      ? '${LocaleKeys.authResendOtp.tr()} (${secondsRemaining}s)'
                       : LocaleKeys.authResendOtp.tr(),
                 ),
               );

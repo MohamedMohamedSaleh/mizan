@@ -1,0 +1,65 @@
+import 'package:flutter/material.dart';
+
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_spacing.dart';
+
+class VendorsSummaryCard extends StatelessWidget {
+  const VendorsSummaryCard({
+    super.key,
+    required this.title,
+    required this.value,
+    required this.icon,
+    this.endPadding = 14,
+  });
+
+  final String title;
+  final String value;
+  final IconData icon;
+  final double endPadding;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: context.responsive(mobile: 220, tablet: null),
+      margin: EdgeInsetsDirectional.only(end: endPadding),
+      padding: AppSpacing.paddingAllLg,
+      decoration: BoxDecoration(
+        color: context.colors.card,
+        borderRadius: AppRadius.borderRadiusBase,
+        border: Border.all(color: context.colors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: context.colors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 18, color: context.colors.primary),
+          ),
+          AppSpacing.gapH12,
+          Text(
+            title,
+            style: context.textTheme.labelLarge?.copyWith(
+              color: context.colors.textSecondary,
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+          AppSpacing.gapH12,
+          Text(
+            value,
+            style: context.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: context.colors.textPrimary,
+              fontSize: 20,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

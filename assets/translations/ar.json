@@ -7,6 +7,7 @@
     "dashboard": "لوحة التحكم",
     "finance": "المالية",
     "expenses": "المصروفات",
+    "vendors": "الموردون",
     "add_expense": "إضافة مصروف",
     "general_accounting": "المحاسبة العامة",
     "journal_entries": "القيود اليومية",
@@ -90,7 +91,8 @@
     "currency": "العملة",
     "from_date": "من تاريخ",
     "to_date": "إلى تاريخ",
-    "payment_method": "طريقة الدفع"
+    "payment_method": "طريقة الدفع",
+    "address": "العنوان"
   },
   "accounting": {
     "debit": "مدين",
@@ -204,6 +206,28 @@
     "validation_paid_from_required": "اختر الحساب المستخدم لسداد هذا المصروف.",
     "validation_date_required": "اختر تاريخ المصروف.",
     "validation_journal_not_balanced": "القيد المحاسبي غير متوازن."
+  },
+  "vendors": {
+    "title": "الموردون",
+    "manage": "إدارة بيانات الموردين",
+    "add": "إضافة مورد",
+    "add_title": "إضافة مورد",
+    "edit_title": "تعديل مورد",
+    "search_hint": "ابحث بالاسم أو الهاتف أو البريد أو الرقم الضريبي",
+    "status_filter": "الحالة",
+    "no_vendors": "لا توجد موردون",
+    "delete": "حذف المورد",
+    "confirm_delete": "هل أنت متأكد من حذف هذا المورد؟",
+    "created_successfully": "تم إنشاء المورد بنجاح",
+    "updated_successfully": "تم تحديث المورد بنجاح",
+    "deleted_successfully": "تم حذف المورد بنجاح",
+    "validation_name_required": "أدخل اسم المورد.",
+    "summary_total": "إجمالي الموردين",
+    "summary_with_email": "ببريد إلكتروني",
+    "summary_with_phone": "برقم هاتف",
+    "address": "العنوان",
+    "tax_number": "الرقم الضريبي",
+    "notes": "ملاحظات"
   },
   "messages": {
     "success": "تمت العملية بنجاح",

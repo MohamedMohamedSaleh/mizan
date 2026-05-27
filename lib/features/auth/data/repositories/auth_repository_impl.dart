@@ -14,6 +14,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
   String _mapAuthError(String message) {
     final lower = message.toLowerCase();
+    if (lower.contains('rate limit') ||
+        lower.contains('too many requests') ||
+        lower.contains('429') ||
+        lower.contains('over_email_send_rate_limit')) {
+      return 'Too many OTP requests. Please wait a few minutes before trying again.';
+    }
     if (lower.contains('already registered') || lower.contains('already exists')) {
       return 'This email is already registered.';
     }
@@ -36,6 +42,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
   String _mapGenericError(Object error) {
     final message = error.toString().toLowerCase();
+    if (message.contains('rate limit') ||
+        message.contains('too many requests') ||
+        message.contains('429') ||
+        message.contains('over_email_send_rate_limit')) {
+      return 'Too many OTP requests. Please wait a few minutes before trying again.';
+    }
     if (message.contains('otp verification failed')) {
       return 'Invalid or expired OTP code.';
     }

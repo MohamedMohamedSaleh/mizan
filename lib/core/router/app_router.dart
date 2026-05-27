@@ -24,6 +24,12 @@ import '../../features/expenses/presentation/views/add_expense_screen.dart';
 import '../../features/expenses/presentation/views/edit_expense_screen.dart';
 import '../../features/expenses/presentation/views/expense_details_screen.dart';
 import '../../features/expenses/presentation/views/expenses_screen.dart';
+import '../../features/vendors/presentation/cubit/add_vendor_cubit.dart';
+import '../../features/vendors/presentation/cubit/edit_vendor_cubit.dart';
+import '../../features/vendors/presentation/cubit/vendors_cubit.dart';
+import '../../features/vendors/presentation/views/add_vendor_screen.dart';
+import '../../features/vendors/presentation/views/edit_vendor_screen.dart';
+import '../../features/vendors/presentation/views/vendors_screen.dart';
 import '../di/injection.dart';
 import '../localization/locale_keys.dart';
 import 'route_names.dart';
@@ -93,11 +99,10 @@ class AppRouter {
       GoRoute(
         path: RoutePaths.verifyRegisterOtp,
         name: RouteNames.verifyRegisterOtp,
+        redirect: (_, state) =>
+            state.extra is RegisterOtpPayload ? null : RoutePaths.register,
         builder: (context, state) {
-          final payload = state.extra as RegisterOtpPayload?;
-          if (payload == null) {
-            return const LoginView();
-          }
+          final payload = state.extra! as RegisterOtpPayload;
           return VerifyRegisterOtpView(payload: payload);
         },
       ),
@@ -109,6 +114,10 @@ class AppRouter {
       GoRoute(
         path: '/expenses',
         redirect: (_, __) => RoutePaths.expenses,
+      ),
+      GoRoute(
+        path: '/dashboard/vendors',
+        redirect: (_, __) => RoutePaths.vendors,
       ),
       GoRoute(
         path: '/expenses/add',
@@ -148,6 +157,33 @@ class AppRouter {
               return BlocProvider(
                 create: (_) => sl<AddExpenseCubit>(),
                 child: AddExpenseScreen(initialLookups: preloadedLookups),
+              );
+            },
+          ),
+          GoRoute(
+            path: RoutePaths.vendors,
+            name: RouteNames.vendors,
+            builder: (context, state) => BlocProvider(
+              create: (_) => sl<VendorsCubit>(),
+              child: const VendorsScreen(showAppBar: false),
+            ),
+          ),
+          GoRoute(
+            path: RoutePaths.addVendor,
+            name: RouteNames.addVendor,
+            builder: (context, state) => BlocProvider(
+              create: (_) => sl<AddVendorCubit>(),
+              child: const AddVendorScreen(),
+            ),
+          ),
+          GoRoute(
+            path: RoutePaths.editVendor,
+            name: RouteNames.editVendor,
+            builder: (context, state) {
+              final id = state.pathParameters['id'] ?? '';
+              return BlocProvider(
+                create: (_) => sl<EditVendorCubit>(),
+                child: EditVendorScreen(vendorId: id),
               );
             },
           ),

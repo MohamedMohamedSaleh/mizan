@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../../core/usecases/usecase.dart';
 import '../../../../core/utils/result.dart';
@@ -57,6 +58,10 @@ class AuthCubit extends Cubit<AuthState> {
   final UpsertProfileUseCase _upsertProfileUseCase;
   final SeedAccountingDataUseCase _seedAccountingDataUseCase;
   bool _hasCheckedInitialSession = false;
+  bool _isSendingEmailOtp = false;
+  bool _isResendingRegisterOtp = false;
+  bool _isVerifyingEmailOtp = false;
+  bool _isVerifyingRegisterOtp = false;
 
   bool get hasCheckedInitialSession => _hasCheckedInitialSession;
 
@@ -182,87 +187,113 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> sendEmailOtp({required String email}) async {
-    emit(const SendingOtp());
-    final result = await _sendEmailOtpUseCase(
-      SendEmailOtpParams(email: email),
-    );
-    result.fold(
-      (failure) => emit(AuthError(failure.message)),
-      (_) => emit(OtpSent(email: email)),
-    );
+    if (_isSendingEmailOtp) return;
+    _isSendingEmailOtp = true;
+    if (kDebugMode) debugPrint('[AuthCubit] Sending login OTP to $email');
+    try {
+      emit(const SendingOtp());
+      final result = await _sendEmailOtpUseCase(
+        SendEmailOtpParams(email: email),
+      );
+      result.fold(
+        (failure) => emit(AuthError(failure.message)),
+        (_) => emit(OtpSent(email: email)),
+      );
+    } finally {
+      _isSendingEmailOtp = false;
+    }
   }
 
   Future<void> verifyEmailOtp({
     required String email,
     required String otp,
   }) async {
-    emit(VerifyingOtp(email: email));
-    final result = await _verifyEmailOtpUseCase(
-      VerifyEmailOtpParams(email: email, otp: otp),
-    );
-    await result.fold(
-      (failure) async => emit(AuthError(failure.message)),
-      (user) async {
-        final seedFailureMessage = await _seedAccountingData();
-        if (seedFailureMessage != null) {
-          emit(AuthError(seedFailureMessage));
-          return;
-        }
-        emit(Authenticated(user));
-      },
-    );
+    if (_isVerifyingEmailOtp) return;
+    _isVerifyingEmailOtp = true;
+    try {
+      emit(VerifyingOtp(email: email));
+      final result = await _verifyEmailOtpUseCase(
+        VerifyEmailOtpParams(email: email, otp: otp),
+      );
+      await result.fold(
+        (failure) async => emit(AuthError(failure.message)),
+        (user) async {
+          final seedFailureMessage = await _seedAccountingData();
+          if (seedFailureMessage != null) {
+            emit(AuthError(seedFailureMessage));
+            return;
+          }
+          emit(Authenticated(user));
+        },
+      );
+    } finally {
+      _isVerifyingEmailOtp = false;
+    }
   }
 
   Future<void> verifyRegisterOtp({
     required RegisterOtpPayload payload,
     required String otp,
   }) async {
-    emit(const RegisterOtpVerifying());
-    final verifyResult = await _verifyRegisterOtpUseCase(
-      VerifyRegisterOtpParams(email: payload.email, otp: otp),
-    );
+    if (_isVerifyingRegisterOtp) return;
+    _isVerifyingRegisterOtp = true;
+    try {
+      emit(const RegisterOtpVerifying());
+      final verifyResult = await _verifyRegisterOtpUseCase(
+        VerifyRegisterOtpParams(email: payload.email, otp: otp),
+      );
 
-    await verifyResult.fold(
-      (failure) async => emit(RegisterFailure(failure.message)),
-      (user) async {
-        final profileResult = await _upsertProfileUseCase(
-          UpsertProfileParams(
-            userId: user.id,
-            fullName: payload.fullName,
-            email: payload.email,
-            phone: payload.phone,
-            companyName: payload.companyName,
-            jobTitle: payload.jobTitle,
-            country: payload.country,
-            city: payload.city,
-          ),
-        );
+      await verifyResult.fold(
+        (failure) async => emit(RegisterFailure(failure.message)),
+        (user) async {
+          final profileResult = await _upsertProfileUseCase(
+            UpsertProfileParams(
+              userId: user.id,
+              fullName: payload.fullName,
+              email: payload.email,
+              phone: payload.phone,
+              companyName: payload.companyName,
+              jobTitle: payload.jobTitle,
+              country: payload.country,
+              city: payload.city,
+            ),
+          );
 
-        await profileResult.fold(
-          (failure) async => emit(RegisterFailure(failure.message)),
-          (_) async {
-            final seedFailureMessage = await _seedAccountingData();
-            if (seedFailureMessage != null) {
-              emit(RegisterFailure(seedFailureMessage));
-              return;
-            }
-            emit(RegisterSuccess(user));
-            emit(Authenticated(user));
-          },
-        );
-      },
-    );
+          await profileResult.fold(
+            (failure) async => emit(RegisterFailure(failure.message)),
+            (_) async {
+              final seedFailureMessage = await _seedAccountingData();
+              if (seedFailureMessage != null) {
+                emit(RegisterFailure(seedFailureMessage));
+                return;
+              }
+              emit(RegisterSuccess(user));
+              emit(Authenticated(user));
+            },
+          );
+        },
+      );
+    } finally {
+      _isVerifyingRegisterOtp = false;
+    }
   }
 
   Future<void> resendRegisterOtp({required String email}) async {
-    emit(const ResendOtpLoading());
-    final result = await _resendRegisterOtpUseCase(
-      ResendRegisterOtpParams(email: email),
-    );
-    result.fold(
-      (failure) => emit(RegisterFailure(failure.message)),
-      (_) => emit(const ResendOtpSuccess()),
-    );
+    if (_isResendingRegisterOtp) return;
+    _isResendingRegisterOtp = true;
+    if (kDebugMode) debugPrint('[AuthCubit] Resending register OTP to $email');
+    try {
+      emit(const ResendOtpLoading());
+      final result = await _resendRegisterOtpUseCase(
+        ResendRegisterOtpParams(email: email),
+      );
+      result.fold(
+        (failure) => emit(RegisterFailure(failure.message)),
+        (_) => emit(const ResendOtpSuccess()),
+      );
+    } finally {
+      _isResendingRegisterOtp = false;
+    }
   }
 
   Future<String?> _seedAccountingData() async {

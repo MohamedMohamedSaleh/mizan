@@ -20,6 +20,7 @@ abstract final class LocaleKeys {
   static const String navDashboard = 'nav.dashboard';
   static const String navFinance = 'nav.finance';
   static const String navExpenses = 'nav.expenses';
+  static const String navVendors = 'nav.vendors';
   static const String navAddExpense = 'nav.add_expense';
   static const String navGeneralAccounting = 'nav.general_accounting';
   static const String navJournalEntries = 'nav.journal_entries';
@@ -106,6 +107,7 @@ abstract final class LocaleKeys {
   static const String fieldsFromDate = 'fields.from_date';
   static const String fieldsToDate = 'fields.to_date';
   static const String fieldsPaymentMethod = 'fields.payment_method';
+  static const String fieldsAddress = 'fields.address';
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Accounting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String accountingDebit = 'accounting.debit';
@@ -230,6 +232,31 @@ abstract final class LocaleKeys {
       'expenses.validation_date_required';
   static const String expensesValidationJournalNotBalanced =
       'expenses.validation_journal_not_balanced';
+
+  static const String vendorsTitle = 'vendors.title';
+  static const String vendorsManage = 'vendors.manage';
+  static const String vendorsAdd = 'vendors.add';
+  static const String vendorsAddTitle = 'vendors.add_title';
+  static const String vendorsEditTitle = 'vendors.edit_title';
+  static const String vendorsSearchHint = 'vendors.search_hint';
+  static const String vendorsStatusFilter = 'vendors.status_filter';
+  static const String vendorsNoVendors = 'vendors.no_vendors';
+  static const String vendorsDelete = 'vendors.delete';
+  static const String vendorsConfirmDelete = 'vendors.confirm_delete';
+  static const String vendorsCreatedSuccessfully =
+      'vendors.created_successfully';
+  static const String vendorsUpdatedSuccessfully =
+      'vendors.updated_successfully';
+  static const String vendorsDeletedSuccessfully =
+      'vendors.deleted_successfully';
+  static const String vendorsValidationNameRequired =
+      'vendors.validation_name_required';
+  static const String vendorsSummaryTotal = 'vendors.summary_total';
+  static const String vendorsSummaryWithEmail = 'vendors.summary_with_email';
+  static const String vendorsSummaryWithPhone = 'vendors.summary_with_phone';
+  static const String vendorsAddress = 'vendors.address';
+  static const String vendorsTaxNumber = 'vendors.tax_number';
+  static const String vendorsNotes = 'vendors.notes';
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String messagesSuccess = 'messages.success';

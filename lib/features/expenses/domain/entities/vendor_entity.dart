@@ -7,10 +7,12 @@ class VendorEntity extends Equatable {
     required this.name,
     this.phone,
     this.email,
-    this.isActive = true,
+    this.address,
+    this.taxNumber,
+    this.notes,
+    this.status,
     this.createdAt,
     this.updatedAt,
-    this.deletedAt,
   });
 
   final String id;
@@ -18,10 +20,12 @@ class VendorEntity extends Equatable {
   final String name;
   final String? phone;
   final String? email;
-  final bool isActive;
+  final String? address;
+  final String? taxNumber;
+  final String? notes;
+  final String? status;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-  final DateTime? deletedAt;
 
   VendorEntity copyWith({
     String? id,
@@ -31,11 +35,16 @@ class VendorEntity extends Equatable {
     bool clearPhone = false,
     String? email,
     bool clearEmail = false,
-    bool? isActive,
+    String? address,
+    bool clearAddress = false,
+    String? taxNumber,
+    bool clearTaxNumber = false,
+    String? notes,
+    bool clearNotes = false,
+    String? status,
+    bool clearStatus = false,
     DateTime? createdAt,
     DateTime? updatedAt,
-    DateTime? deletedAt,
-    bool clearDeletedAt = false,
   }) {
     return VendorEntity(
       id: id ?? this.id,
@@ -43,10 +52,12 @@ class VendorEntity extends Equatable {
       name: name ?? this.name,
       phone: clearPhone ? null : phone ?? this.phone,
       email: clearEmail ? null : email ?? this.email,
-      isActive: isActive ?? this.isActive,
+      address: clearAddress ? null : address ?? this.address,
+      taxNumber: clearTaxNumber ? null : taxNumber ?? this.taxNumber,
+      notes: clearNotes ? null : notes ?? this.notes,
+      status: clearStatus ? null : status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      deletedAt: clearDeletedAt ? null : deletedAt ?? this.deletedAt,
     );
   }
 
@@ -57,9 +68,11 @@ class VendorEntity extends Equatable {
         name,
         phone,
         email,
-        isActive,
+        address,
+        taxNumber,
+        notes,
+        status,
         createdAt,
         updatedAt,
-        deletedAt,
       ];
 }

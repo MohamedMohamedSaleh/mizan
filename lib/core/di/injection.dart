@@ -47,6 +47,14 @@ import '../../features/expenses/presentation/cubit/add_expense_cubit.dart';
 import '../../features/expenses/presentation/cubit/edit_expense_cubit.dart';
 import '../../features/expenses/presentation/cubit/expense_details_cubit.dart';
 import '../../features/expenses/presentation/cubit/expenses_cubit.dart';
+import '../../features/vendors/domain/usecases/create_vendor_usecase.dart';
+import '../../features/vendors/domain/usecases/delete_vendor_usecase.dart';
+import '../../features/vendors/domain/usecases/get_vendor_by_id_usecase.dart';
+import '../../features/vendors/domain/usecases/get_vendors_usecase.dart';
+import '../../features/vendors/domain/usecases/update_vendor_usecase.dart';
+import '../../features/vendors/presentation/cubit/add_vendor_cubit.dart';
+import '../../features/vendors/presentation/cubit/edit_vendor_cubit.dart';
+import '../../features/vendors/presentation/cubit/vendors_cubit.dart';
 import '../router/app_router.dart';
 
 final sl = GetIt.instance;
@@ -163,6 +171,13 @@ Future<void> initDependencies() async {
       seedAccountingDataUseCase: sl<SeedAccountingDataUseCase>(),
     ),
   );
+  sl.registerLazySingleton(() => GetVendorsUseCase(sl<VendorsRepository>()));
+  sl.registerLazySingleton(
+    () => GetVendorByIdUseCase(sl<VendorsRepository>()),
+  );
+  sl.registerLazySingleton(() => CreateVendorUseCase(sl<VendorsRepository>()));
+  sl.registerLazySingleton(() => UpdateVendorUseCase(sl<VendorsRepository>()));
+  sl.registerLazySingleton(() => DeleteVendorUseCase(sl<VendorsRepository>()));
 
   // ──────────── Cubits ───────────────
   sl.registerLazySingleton(
@@ -210,6 +225,24 @@ Future<void> initDependencies() async {
       categoriesRepository: sl<ExpenseCategoriesRepository>(),
       getExpenseDetailsUseCase: sl<GetExpenseDetailsUseCase>(),
       updateExpenseUseCase: sl<UpdateExpenseUseCase>(),
+    ),
+  );
+  sl.registerFactory(
+    () => VendorsCubit(
+      getVendorsUseCase: sl<GetVendorsUseCase>(),
+      deleteVendorUseCase: sl<DeleteVendorUseCase>(),
+    ),
+  );
+  sl.registerFactory(
+    () => AddVendorCubit(
+      createVendorUseCase: sl<CreateVendorUseCase>(),
+    ),
+  );
+  sl.registerFactory(
+    () => EditVendorCubit(
+      createVendorUseCase: sl<CreateVendorUseCase>(),
+      getVendorByIdUseCase: sl<GetVendorByIdUseCase>(),
+      updateVendorUseCase: sl<UpdateVendorUseCase>(),
     ),
   );
 

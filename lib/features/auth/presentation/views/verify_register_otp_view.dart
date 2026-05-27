@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +11,7 @@ import '../../../../core/services/toast_service.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
+import '../utils/otp_cooldown_mixin.dart';
 import '../widgets/auth_widgets.dart';
 
 class VerifyRegisterOtpView extends StatefulWidget {
@@ -26,39 +26,20 @@ class VerifyRegisterOtpView extends StatefulWidget {
   State<VerifyRegisterOtpView> createState() => _VerifyRegisterOtpViewState();
 }
 
-class _VerifyRegisterOtpViewState extends State<VerifyRegisterOtpView> {
+class _VerifyRegisterOtpViewState extends State<VerifyRegisterOtpView>
+    with OtpCooldownMixin {
   final _formKey = GlobalKey<FormState>();
   final _otpController = TextEditingController();
-  Timer? _timer;
-  int _secondsRemaining = 120;
 
   @override
   void initState() {
     super.initState();
-    _startTimer();
-  }
-
-  void _startTimer() {
-    _timer?.cancel();
-    setState(() {
-      _secondsRemaining = 120;
-    });
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_secondsRemaining == 0) {
-        setState(() {
-          _timer?.cancel();
-        });
-      } else {
-        setState(() {
-          _secondsRemaining--;
-        });
-      }
-    });
+    startOtpCooldown();
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    disposeOtpCooldown();
     _otpController.dispose();
     super.dispose();
   }
@@ -188,17 +169,16 @@ class _VerifyRegisterOtpViewState extends State<VerifyRegisterOtpView> {
                         builder: (context, state) {
                           final loading = state is ResendOtpLoading;
                           return TextButton(
-                            onPressed: (loading || _secondsRemaining > 0)
+                            onPressed: (loading || isCooldownActive)
                                 ? null
                                 : () {
                                     context
                                         .read<AuthCubit>()
                                         .resendRegisterOtp(email: widget.payload.email);
-                                    _startTimer();
                                   },
                             child: Text(
-                              _secondsRemaining > 0
-                                  ? '${LocaleKeys.authResendOtp.tr()} (${_secondsRemaining}s)'
+                              isCooldownActive
+                                  ? '${LocaleKeys.authResendOtp.tr()} (${secondsRemaining}s)'
                                   : LocaleKeys.authResendOtp.tr(),
                             ),
                           );

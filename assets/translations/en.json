@@ -7,6 +7,7 @@
                 "dashboard":  "Dashboard",
                 "finance":  "Finance",
                 "expenses":  "Expenses",
+                "vendors":  "Vendors",
                 "add_expense":  "Add Expense",
                 "general_accounting":  "General Accounting",
                 "journal_entries":  "Journal Entries",
@@ -90,7 +91,8 @@
                    "currency":  "Currency",
                    "from_date":  "From Date",
                    "to_date":  "To Date",
-                   "payment_method":  "Payment Method"
+                   "payment_method":  "Payment Method",
+                   "address":  "Address"
                },
     "accounting":  {
                        "debit":  "Debit",
@@ -205,6 +207,28 @@
                      "validation_date_required":  "Select an expense date.",
                      "validation_journal_not_balanced":  "The journal entry is not balanced."
                  },
+    "vendors":  {
+                    "title":  "Vendors",
+                    "manage":  "Manage vendor directory",
+                    "add":  "Add Vendor",
+                    "add_title":  "Add Vendor",
+                    "edit_title":  "Edit Vendor",
+                    "search_hint":  "Search name, phone, email, or tax number",
+                    "status_filter":  "Status",
+                    "no_vendors":  "No vendors found",
+                    "delete":  "Delete Vendor",
+                    "confirm_delete":  "Are you sure you want to delete this vendor?",
+                    "created_successfully":  "Vendor created successfully",
+                    "updated_successfully":  "Vendor updated successfully",
+                    "deleted_successfully":  "Vendor deleted successfully",
+                    "validation_name_required":  "Enter a vendor name.",
+                    "summary_total":  "Total vendors",
+                    "summary_with_email":  "With email",
+                    "summary_with_phone":  "With phone",
+                    "address":  "Address",
+                    "tax_number":  "Tax Number",
+                    "notes":  "Notes"
+                },
     "messages":  {
                      "success":  "Operation completed successfully",
                      "error":  "An error occurred",

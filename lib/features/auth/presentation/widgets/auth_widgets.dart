@@ -23,6 +23,7 @@ class AuthTextField extends StatelessWidget {
     this.onFieldSubmitted,
     this.autofillHints,
     this.textDirection,
+    this.maxLines = 1,
   });
 
   final TextEditingController controller;
@@ -38,6 +39,7 @@ class AuthTextField extends StatelessWidget {
   final void Function(String)? onFieldSubmitted;
   final Iterable<String>? autofillHints;
   final TextDirection? textDirection;
+  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +63,7 @@ class AuthTextField extends StatelessWidget {
           onFieldSubmitted: onFieldSubmitted,
           autofillHints: autofillHints,
           textDirection: textDirection,
+          maxLines: maxLines,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: context.colors.textPrimary,
               ),

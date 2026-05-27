@@ -227,7 +227,9 @@
                     "summary_with_phone":  "With phone",
                     "address":  "Address",
                     "tax_number":  "Tax Number",
-                    "notes":  "Notes"
+                    "notes":  "Notes",
+                    "status_active":  "Active",
+                    "status_inactive":  "Inactive"
                 },
     "messages":  {
                      "success":  "Operation completed successfully",

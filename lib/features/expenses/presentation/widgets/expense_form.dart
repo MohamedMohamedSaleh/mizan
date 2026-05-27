@@ -13,6 +13,7 @@ import '../../domain/entities/tax_entity.dart';
 import '../../domain/entities/vendor_entity.dart';
 import '../cubit/add_expense_cubit.dart';
 import '../cubit/add_expense_state.dart';
+import '../../../vendors/presentation/utils/vendor_status_utils.dart';
 
 class ExpenseForm extends StatelessWidget {
   const ExpenseForm({
@@ -112,7 +113,9 @@ class ExpenseForm extends StatelessWidget {
                         hint: LocaleKeys.expensesSelectVendor.tr(),
                         value: state.selectedVendor,
                         items: state.lookups.vendors,
-                        itemLabel: (item) => item.name,
+                        itemLabel: (item) =>
+                            '${item.name} (${VendorStatusUtils.label(item.status)})',
+                        searchLabel: (item) => item.name,
                         showClear: true,
                         onChanged: cubit.vendorChanged,
                         onCreateNew: cubit.createVendor,
@@ -413,6 +416,7 @@ class _SearchableDropdown<T> extends StatefulWidget {
     required this.value,
     required this.items,
     required this.itemLabel,
+    this.searchLabel,
     required this.onChanged,
     this.onCreateNew,
     this.hint,
@@ -425,6 +429,7 @@ class _SearchableDropdown<T> extends StatefulWidget {
   final T? value;
   final List<T> items;
   final String Function(T item) itemLabel;
+  final String Function(T item)? searchLabel;
   final ValueChanged<T?> onChanged;
   final Future<T?> Function(String query)? onCreateNew;
   final String? errorKey;
@@ -497,13 +502,16 @@ class _SearchableDropdownState<T> extends State<_SearchableDropdown<T>> {
       suggestionsBuilder: (BuildContext context, SearchController controller) {
         final query = controller.text.trim();
         final List<T> matches = widget.items.where((item) {
-          final name = widget.itemLabel(item).toLowerCase();
+          final name =
+              (widget.searchLabel?.call(item) ?? widget.itemLabel(item)).toLowerCase();
           return name.contains(query.toLowerCase());
         }).toList();
 
         final hasExactMatch = widget.items.any(
           (item) =>
-              widget.itemLabel(item).toLowerCase() == query.toLowerCase(),
+              (widget.searchLabel?.call(item) ?? widget.itemLabel(item))
+                  .toLowerCase() ==
+              query.toLowerCase(),
         );
 
         return [

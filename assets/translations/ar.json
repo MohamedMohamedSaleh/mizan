@@ -227,7 +227,9 @@
     "summary_with_phone": "برقم هاتف",
     "address": "العنوان",
     "tax_number": "الرقم الضريبي",
-    "notes": "ملاحظات"
+    "notes": "ملاحظات",
+    "status_active": "نشط",
+    "status_inactive": "غير نشط"
   },
   "messages": {
     "success": "تمت العملية بنجاح",

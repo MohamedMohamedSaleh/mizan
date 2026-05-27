@@ -9,7 +9,7 @@ class VendorFormState extends Equatable {
     this.address = '',
     this.taxNumber = '',
     this.notes = '',
-    this.status = '',
+    this.status = 'active',
     this.isInitialLoading = false,
     this.isSaving = false,
     this.saveSuccess = false,

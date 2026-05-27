@@ -4,6 +4,7 @@ import '../../../../core/utils/result.dart';
 import '../../domain/usecases/delete_vendor_usecase.dart';
 import '../../domain/usecases/get_vendors_usecase.dart';
 import '../../../expenses/domain/entities/vendor_entity.dart';
+import '../utils/vendor_status_utils.dart';
 import '../view_model/vendor_filter_view_model.dart';
 import '../view_model/vendor_list_item_view_model.dart';
 import '../view_model/vendors_summary_view_model.dart';
@@ -21,7 +22,7 @@ class VendorsCubit extends Cubit<VendorsState> {
   final DeleteVendorUseCase _deleteVendorUseCase;
 
   VendorFilterViewModel _filters = const VendorFilterViewModel();
-  List<String> _availableStatuses = const [];
+  List<String> _availableStatuses = VendorStatusUtils.all;
 
   Future<void> loadVendors() => _load(_filters);
 
@@ -36,10 +37,11 @@ class VendorsCubit extends Cubit<VendorsState> {
   }
 
   Future<void> filterByStatus(String? status) {
-    final normalized = status?.trim();
+    final normalized =
+        status == null || status.trim().isEmpty ? null : VendorStatusUtils.normalize(status);
     _filters = _filters.copyWith(
-      status: normalized?.isEmpty ?? true ? null : normalized,
-      clearStatus: normalized == null || normalized.isEmpty,
+      status: normalized,
+      clearStatus: normalized == null,
     );
     return _load(_filters);
   }
@@ -134,13 +136,21 @@ class VendorsCubit extends Cubit<VendorsState> {
   ) {
     final merged = <String>{...existingStatuses};
     for (final vendor in vendors) {
-      final status = vendor.status?.trim();
-      if (status != null && status.isNotEmpty) {
-        merged.add(status);
+        final status = vendor.status?.trim();
+        if (status != null && status.isNotEmpty) {
+        merged.add(VendorStatusUtils.normalize(status));
       }
     }
 
-    final ordered = merged.toList()..sort();
+    merged.addAll(VendorStatusUtils.all);
+    final ordered = merged.toList()
+      ..sort((a, b) {
+        final normalizedA = VendorStatusUtils.normalize(a);
+        final normalizedB = VendorStatusUtils.normalize(b);
+        if (normalizedA == normalizedB) return 0;
+        if (normalizedA == VendorStatusUtils.active) return -1;
+        return 1;
+      });
     return ordered;
   }
 }

@@ -42,6 +42,22 @@ class VendorListItemViewModel extends Equatable {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  VendorEntity toEntity() {
+    return VendorEntity(
+      id: id,
+      userId: '',
+      name: name,
+      phone: phone,
+      email: email,
+      address: address,
+      taxNumber: taxNumber,
+      notes: notes,
+      status: status,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
+
   @override
   List<Object?> get props => [
         id,

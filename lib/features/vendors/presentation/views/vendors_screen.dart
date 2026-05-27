@@ -14,6 +14,7 @@ import '../cubit/vendors_state.dart';
 import '../view_model/vendor_filter_view_model.dart';
 import '../view_model/vendor_list_item_view_model.dart';
 import '../view_model/vendors_summary_view_model.dart';
+import '../utils/vendor_status_utils.dart';
 import '../widgets/vendor_status_badge.dart';
 import '../widgets/vendors_summary_card.dart';
 
@@ -222,7 +223,7 @@ class _SummaryStrip extends StatelessWidget {
       ),
       VendorsSummaryCard(
         title: LocaleKeys.vendorsSummaryWithEmail.tr(),
-        value: summary.withEmailCount.toString(),
+              value: summary.withEmailCount.toString(),
         icon: Icons.email_outlined,
       ),
       VendorsSummaryCard(
@@ -443,7 +444,7 @@ class _StatusFilter extends StatelessWidget {
           .map(
             (status) => DropdownMenuItem(
               value: status,
-              child: Text(status),
+              child: Text(VendorStatusUtils.label(status)),
             ),
           )
           .toList(),
@@ -489,7 +490,7 @@ class _VendorsTable extends StatelessWidget {
                       Row(
                         children: [
                           IconButton(
-                            onPressed: () => _openEditVendor(context, vendor.id),
+                            onPressed: () => _openEditVendor(context, vendor),
                             icon: const Icon(Icons.edit_outlined),
                           ),
                           IconButton(
@@ -563,7 +564,7 @@ class _VendorCard extends StatelessWidget {
                 Row(
                   children: [
                     IconButton(
-                      onPressed: () => _openEditVendor(context, vendor.id),
+                      onPressed: () => _openEditVendor(context, vendor),
                       icon: const Icon(Icons.edit_outlined),
                     ),
                     IconButton(
@@ -643,8 +644,14 @@ Future<void> _openAddVendor(BuildContext context) async {
   }
 }
 
-Future<void> _openEditVendor(BuildContext context, String vendorId) async {
-  final shouldRefresh = await context.push<bool>('/vendors/$vendorId/edit');
+Future<void> _openEditVendor(
+  BuildContext context,
+  VendorListItemViewModel vendor,
+) async {
+  final shouldRefresh = await context.push<bool>(
+    '/vendors/${vendor.id}/edit',
+    extra: vendor.toEntity(),
+  );
   if (shouldRefresh == true && context.mounted) {
     await context.read<VendorsCubit>().refresh();
   }

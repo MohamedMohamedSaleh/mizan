@@ -9,6 +9,7 @@ import '../../../../core/services/toast_service.dart';
 import '../../../auth/presentation/widgets/auth_widgets.dart';
 import '../cubit/add_vendor_cubit.dart';
 import '../cubit/vendor_form_state.dart';
+import '../utils/vendor_status_utils.dart';
 
 class VendorForm extends StatefulWidget {
   const VendorForm({
@@ -31,23 +32,22 @@ class VendorForm extends StatefulWidget {
 class _VendorFormState extends State<VendorForm> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
-  late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
   late final TextEditingController _addressController;
   late final TextEditingController _taxNumberController;
   late final TextEditingController _notesController;
-  late final TextEditingController _statusController;
+  late final TextEditingController _phoneController;
+  String _phoneCountryCode = 'SA';
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController();
-    _phoneController = TextEditingController();
     _emailController = TextEditingController();
     _addressController = TextEditingController();
     _taxNumberController = TextEditingController();
     _notesController = TextEditingController();
-    _statusController = TextEditingController();
+    _phoneController = TextEditingController();
     _syncControllers(widget.state);
   }
 
@@ -65,7 +65,6 @@ class _VendorFormState extends State<VendorForm> {
     _addressController.dispose();
     _taxNumberController.dispose();
     _notesController.dispose();
-    _statusController.dispose();
     super.dispose();
   }
 
@@ -154,13 +153,15 @@ class _VendorFormState extends State<VendorForm> {
       validator: (_) => _validationFor(VendorFormState.fieldName),
     );
 
-    final phoneField = AuthTextField(
+    final phoneField = AuthPhoneField(
+      key: ValueKey('${widget.state.vendorId}-$_phoneCountryCode'),
       controller: _phoneController,
       label: LocaleKeys.authPhoneNumber.tr(),
-      prefixIcon: Icons.phone_outlined,
-      keyboardType: TextInputType.phone,
+      initialCountryCode: _phoneCountryCode,
+      isRequired: false,
       textInputAction: TextInputAction.next,
       onChanged: widget.cubit.phoneChanged,
+      validator: (_) => null,
     );
 
     final emailField = AuthTextField(
@@ -173,12 +174,14 @@ class _VendorFormState extends State<VendorForm> {
       validator: (_) => _validationFor(VendorFormState.fieldEmail),
     );
 
-    final statusField = AuthTextField(
-      controller: _statusController,
-      label: LocaleKeys.fieldsStatus.tr(),
-      prefixIcon: Icons.toggle_on_outlined,
-      textInputAction: TextInputAction.next,
-      onChanged: widget.cubit.statusChanged,
+    final statusField = _StatusDropdownField(
+      value: VendorStatusUtils.normalize(widget.state.status),
+      enabled: !widget.state.isSaving,
+      onChanged: (value) {
+        if (value != null) {
+          widget.cubit.statusChanged(value);
+        }
+      },
     );
 
     final addressField = AuthTextField(
@@ -264,12 +267,13 @@ class _VendorFormState extends State<VendorForm> {
 
   void _syncControllers(VendorFormState state) {
     _setController(_nameController, state.name);
-    _setController(_phoneController, state.phone);
+    final parsedPhone = _parsePhone(state.phone);
+    _phoneCountryCode = parsedPhone.countryCode;
+    _setController(_phoneController, parsedPhone.localNumber);
     _setController(_emailController, state.email);
     _setController(_addressController, state.address);
     _setController(_taxNumberController, state.taxNumber);
     _setController(_notesController, state.notes);
-    _setController(_statusController, state.status);
   }
 
   void _setController(TextEditingController controller, String value) {
@@ -278,6 +282,76 @@ class _VendorFormState extends State<VendorForm> {
       text: value,
       selection: TextSelection.collapsed(offset: value.length),
       composing: TextRange.empty,
+    );
+  }
+
+  _ParsedPhone _parsePhone(String value) {
+    final trimmed = value.trim();
+    if (trimmed.startsWith('+20')) {
+      return _ParsedPhone(
+        countryCode: 'EG',
+        localNumber: trimmed.substring(3),
+      );
+    }
+    if (trimmed.startsWith('+966')) {
+      return _ParsedPhone(
+        countryCode: 'SA',
+        localNumber: trimmed.substring(4),
+      );
+    }
+    return _ParsedPhone(countryCode: 'SA', localNumber: trimmed);
+  }
+}
+
+class _ParsedPhone {
+  const _ParsedPhone({
+    required this.countryCode,
+    required this.localNumber,
+  });
+
+  final String countryCode;
+  final String localNumber;
+}
+
+class _StatusDropdownField extends StatelessWidget {
+  const _StatusDropdownField({
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final String value;
+  final bool enabled;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          LocaleKeys.fieldsStatus.tr(),
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: context.colors.textPrimary,
+              ),
+        ),
+        AppSpacing.gapH8,
+        DropdownButtonFormField<String>(
+          key: ValueKey(value),
+          initialValue: value,
+          isExpanded: true,
+          decoration: const InputDecoration(),
+          items: VendorStatusUtils.all
+              .map(
+                (status) => DropdownMenuItem<String>(
+                  value: status,
+                  child: Text(VendorStatusUtils.label(status)),
+                ),
+              )
+              .toList(),
+          onChanged: enabled ? onChanged : null,
+        ),
+      ],
     );
   }
 }

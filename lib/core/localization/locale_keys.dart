@@ -257,6 +257,8 @@ abstract final class LocaleKeys {
   static const String vendorsAddress = 'vendors.address';
   static const String vendorsTaxNumber = 'vendors.tax_number';
   static const String vendorsNotes = 'vendors.notes';
+  static const String vendorsStatusActive = 'vendors.status_active';
+  static const String vendorsStatusInactive = 'vendors.status_inactive';
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String messagesSuccess = 'messages.success';

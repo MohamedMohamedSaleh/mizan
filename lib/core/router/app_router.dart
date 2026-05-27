@@ -27,6 +27,7 @@ import '../../features/expenses/presentation/views/expenses_screen.dart';
 import '../../features/vendors/presentation/cubit/add_vendor_cubit.dart';
 import '../../features/vendors/presentation/cubit/edit_vendor_cubit.dart';
 import '../../features/vendors/presentation/cubit/vendors_cubit.dart';
+import '../../features/expenses/domain/entities/vendor_entity.dart';
 import '../../features/vendors/presentation/views/add_vendor_screen.dart';
 import '../../features/vendors/presentation/views/edit_vendor_screen.dart';
 import '../../features/vendors/presentation/views/vendors_screen.dart';
@@ -181,9 +182,13 @@ class AppRouter {
             name: RouteNames.editVendor,
             builder: (context, state) {
               final id = state.pathParameters['id'] ?? '';
+              final initialVendor = state.extra as VendorEntity?;
               return BlocProvider(
                 create: (_) => sl<EditVendorCubit>(),
-                child: EditVendorScreen(vendorId: id),
+                child: EditVendorScreen(
+                  vendorId: id,
+                  initialVendor: initialVendor,
+                ),
               );
             },
           ),

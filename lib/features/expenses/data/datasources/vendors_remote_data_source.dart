@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/vendor_model.dart';
+import '../../../vendors/presentation/utils/vendor_status_utils.dart';
 import 'authenticated_supabase_data_source.dart';
 
 abstract class VendorsRemoteDataSource {
@@ -34,7 +35,7 @@ class VendorsRemoteDataSourceImpl
 
     final normalizedStatus = _normalizeOptional(status);
     if (normalizedStatus != null) {
-      query = query.eq('status', normalizedStatus);
+      query = query.eq('status', VendorStatusUtils.normalize(normalizedStatus));
     }
 
     final normalizedSearch = _normalizeOptional(search);
@@ -59,6 +60,7 @@ class VendorsRemoteDataSourceImpl
         id: '',
         userId: '',
         name: name.trim(),
+        status: VendorStatusUtils.active,
       ),
     );
   }
@@ -123,7 +125,8 @@ class VendorsRemoteDataSourceImpl
     _normalizeOptionalField(payload, 'address');
     _normalizeOptionalField(payload, 'tax_number');
     _normalizeOptionalField(payload, 'notes');
-    _normalizeOptionalField(payload, 'status');
+    final normalizedStatus = _normalizeOptional(payload['status'] as String?);
+    payload['status'] = VendorStatusUtils.normalize(normalizedStatus);
     return payload;
   }
 
@@ -135,7 +138,8 @@ class VendorsRemoteDataSourceImpl
     _normalizeOptionalField(payload, 'address');
     _normalizeOptionalField(payload, 'tax_number');
     _normalizeOptionalField(payload, 'notes');
-    _normalizeOptionalField(payload, 'status');
+    final normalizedStatus = _normalizeOptional(payload['status'] as String?);
+    payload['status'] = VendorStatusUtils.normalize(normalizedStatus);
     return payload;
   }
 

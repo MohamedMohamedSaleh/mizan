@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/localization/locale_keys.dart';
 import '../../domain/usecases/create_vendor_usecase.dart';
 import '../../../expenses/domain/entities/vendor_entity.dart';
+import '../utils/vendor_status_utils.dart';
 import 'vendor_form_state.dart';
 
 class AddVendorCubit extends Cubit<VendorFormState> {
@@ -21,7 +22,10 @@ class AddVendorCubit extends Cubit<VendorFormState> {
   void taxNumberChanged(String value) =>
       _emitFieldUpdate(taxNumber: value, clearSave: true);
   void notesChanged(String value) => _emitFieldUpdate(notes: value, clearSave: true);
-  void statusChanged(String value) => _emitFieldUpdate(status: value, clearSave: true);
+  void statusChanged(String value) => _emitFieldUpdate(
+        status: VendorStatusUtils.normalize(value),
+        clearSave: true,
+      );
 
   Future<void> saveVendor() async {
     final errors = validateForm();
@@ -83,7 +87,7 @@ class AddVendorCubit extends Cubit<VendorFormState> {
       address: _nullable(state.address),
       taxNumber: _nullable(state.taxNumber),
       notes: _nullable(state.notes),
-      status: _nullable(state.status),
+      status: VendorStatusUtils.normalize(state.status),
     );
   }
 
@@ -97,7 +101,7 @@ class AddVendorCubit extends Cubit<VendorFormState> {
         address: vendor.address ?? '',
         taxNumber: vendor.taxNumber ?? '',
         notes: vendor.notes ?? '',
-        status: vendor.status ?? '',
+        status: VendorStatusUtils.normalize(vendor.status),
         isInitialLoading: false,
         saveSuccess: false,
         validationErrors: const {},

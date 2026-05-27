@@ -17,6 +17,7 @@ class AuthPhoneField extends StatefulWidget {
     required this.onChanged,
     this.validator,
     this.textInputAction = TextInputAction.next,
+    this.isRequired = true,
   });
 
   final TextEditingController controller;
@@ -26,6 +27,7 @@ class AuthPhoneField extends StatefulWidget {
   final void Function(String completePhoneNumber)? onChanged;
   final String? Function(String?)? validator;
   final TextInputAction textInputAction;
+  final bool isRequired;
 
   @override
   State<AuthPhoneField> createState() => _AuthPhoneFieldState();
@@ -214,8 +216,11 @@ class _AuthPhoneFieldState extends State<AuthPhoneField> {
           ),
           validator: (value) {
             final phone = value?.trim() ?? '';
-            if (phone.isEmpty) {
+            if (widget.isRequired && phone.isEmpty) {
               return LocaleKeys.authPhoneNumberRequired.tr();
+            }
+            if (!widget.isRequired && phone.isEmpty) {
+              return widget.validator?.call(value);
             }
             final country = _selectedCountryCode.toUpperCase();
             if (country == 'SA' && phone.length != 9) {

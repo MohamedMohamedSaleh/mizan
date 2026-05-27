@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/localization/locale_keys.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/services/toast_service.dart';
+import '../../../expenses/domain/entities/vendor_entity.dart';
 import '../cubit/edit_vendor_cubit.dart';
 import '../cubit/vendor_form_state.dart';
 import '../widgets/vendor_form.dart';
@@ -14,9 +15,11 @@ class EditVendorScreen extends StatefulWidget {
   const EditVendorScreen({
     super.key,
     required this.vendorId,
+    this.initialVendor,
   });
 
   final String vendorId;
+  final VendorEntity? initialVendor;
 
   @override
   State<EditVendorScreen> createState() => _EditVendorScreenState();
@@ -26,7 +29,12 @@ class _EditVendorScreenState extends State<EditVendorScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<EditVendorCubit>().loadVendor(widget.vendorId);
+    final cubit = context.read<EditVendorCubit>();
+    if (widget.initialVendor != null) {
+      cubit.hydrateFromVendor(widget.initialVendor!);
+      return;
+    }
+    cubit.loadVendor(widget.vendorId);
   }
 
   @override
